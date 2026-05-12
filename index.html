@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Mastermind — Clare Mestre</title>
+<style>
+:root {
+  --teal: #006183;
+  --mauve: #865076;
+  --green: #9CBF50;
+  --gold: #FFC000;
+  --slate: #455361;
+  --sky: #66C7F1;
+  --black: #000000;
+  --white: #FFFFFF;
+  --light-bg: #f4f7f9;
+  --border: #dde4e7;
+  --teal-light: #e0eff5;
+  --mauve-light: #f5ecf2;
+  --gold-light: #fff8e0;
+  /* Gradients */
+  --grad-hero: linear-gradient(135deg, #006183 0%, #865076 100%);
+  --grad-rainbow: linear-gradient(90deg, #006183 0%, #9CBF50 33%, #FFC000 65%, #865076 100%);
+  --grad-teal-white: linear-gradient(135deg, #006183 0%, #66C7F1 60%, #ffffff 100%);
+  --grad-mauve-teal: linear-gradient(135deg, #865076 0%, #006183 100%);
+  --grad-warm: linear-gradient(135deg, #FFC000 0%, #865076 100%);
+  --grad-dark: linear-gradient(135deg, #1a2d35 0%, #455361 50%, #3d2840 100%);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: Arial, sans-serif; font-size: 16px; color: var(--black); background: var(--white); }
+
+/* PROGRESS BAR — rainbow gradient */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 4px;
+  background: var(--grad-rainbow); width: 0%; z-index: 9999;
+  transition: width 0.1s linear;
+}
+
+/* NAV — deep teal with subtle gradient */
+nav {
+  position: sticky; top: 0; z-index: 1000;
+  background: linear-gradient(90deg, #006183, #005070);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  min-height: 52px;
+}
+.nav-brand { color: var(--white); font-weight: bold; font-size: 0.85rem; letter-spacing: 0.04em; white-space: nowrap; }
+.nav-links { display: flex; gap: 4px; flex-wrap: wrap; }
+.nav-links a {
+  color: rgba(255,255,255,0.85); text-decoration: none;
+  font-size: 0.78rem; padding: 6px 10px; border-radius: 4px;
+  transition: background 0.2s, color 0.2s; white-space: nowrap;
+}
+.nav-links a:hover, .nav-links a.active {
+  background: rgba(255,255,255,0.18); color: var(--white);
+}
+
+/* HERO — teal to purple gradient */
+#hero {
+  background: var(--grad-hero);
+  color: var(--white);
+  padding: 80px 48px 72px; text-align: center;
+  position: relative; overflow: hidden;
+}
+#hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+#hero h1 { font-size: 2.6rem; font-weight: bold; letter-spacing: -0.02em; margin-bottom: 14px; position: relative; }
+#hero .subhead { font-size: 1.1rem; color: rgba(255,255,255,0.85); margin-bottom: 6px; position: relative; }
+#hero .credit { font-size: 0.9rem; color: rgba(255,255,255,0.65); margin-bottom: 32px; position: relative; }
+.chips { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.chip {
+  background: linear-gradient(135deg, #FFC000, #ffd84d);
+  color: var(--black);
+  font-weight: bold; font-size: 0.85rem;
+  padding: 7px 20px; border-radius: 20px; letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(255,192,0,0.35);
+}
+
+/* SECTIONS */
+section { padding: 64px 48px; }
+section:nth-child(even) { background: var(--light-bg); }
+.section-label {
+  font-size: 0.75rem; font-weight: bold; letter-spacing: 0.12em;
+  background: var(--grad-rainbow);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: uppercase; margin-bottom: 8px; display: inline-block;
+}
+h2 { font-size: 1.9rem; color: var(--slate); margin-bottom: 12px; }
+.section-intro { font-size: 1.05rem; color: #444; max-width: 780px; margin-bottom: 36px; line-height: 1.6; }
+.inner { max-width: 1100px; margin: 0 auto; }
+
+/* PROGRAM OVERVIEW */
+.arc-row { display: flex; align-items: center; gap: 0; margin: 28px 0; flex-wrap: wrap; }
+.arc-step {
+  background: var(--teal); color: var(--white);
+  padding: 12px 24px; font-weight: bold; font-size: 0.9rem;
+  position: relative; clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%, 16px 50%);
+  margin-right: -2px;
+}
+.arc-step:first-child { clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%); }
+.arc-step:last-child { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 16px 50%); }
+.arc-step:nth-child(2) { background: #005570; }
+.arc-step:nth-child(3) { background: var(--mauve); }
+.arc-step:nth-child(4) { background: var(--slate); }
+
+/* LEARNING JOURNEY */
+.journey-list { display: flex; flex-direction: column; gap: 2px; }
+.session-card {
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--white); overflow: hidden;
+}
+.session-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; cursor: pointer;
+  border-left: 4px solid var(--teal); transition: background 0.15s;
+}
+.session-header:hover { background: var(--teal-light); }
+.session-title { font-weight: bold; font-size: 0.95rem; color: var(--slate); }
+.session-sub { font-size: 0.8rem; color: #666; margin-top: 2px; }
+.session-arrow {
+  color: var(--teal); font-size: 1.1rem;
+  transition: transform 0.2s; flex-shrink: 0; margin-left: 12px;
+}
+.session-arrow.open { transform: rotate(90deg); }
+.session-body { display: none; padding: 20px 24px 24px; border-top: 1px solid var(--border); background: #fafcfd; }
+.session-body.open { display: block; }
+.session-body h4 { color: var(--teal); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 14px 0 6px; }
+.session-body h4:first-child { margin-top: 0; }
+.session-body ul { padding-left: 18px; }
+.session-body li { font-size: 0.9rem; line-height: 1.65; margin-bottom: 3px; color: #333; }
+.session-body p { font-size: 0.9rem; line-height: 1.65; color: #333; margin-bottom: 8px; }
+.tag {
+  display: inline-block; font-size: 0.72rem; padding: 2px 8px;
+  border-radius: 3px; margin: 2px 3px 2px 0; font-weight: bold;
+}
+.tag-teal { background: var(--teal-light); color: var(--teal); }
+.tag-gold { background: #fff8e0; color: #7a5a00; }
+.tag-mauve { background: #f5edf2; color: var(--mauve); }
+
+/* FRAMEWORKS */
+.frameworks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+.framework-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden; cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s;
+  position: relative;
+}
+.framework-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+}
+.framework-card:nth-child(1)::before { background: linear-gradient(90deg, #006183, #66C7F1); }
+.framework-card:nth-child(2)::before { background: linear-gradient(90deg, #FFC000, #ffd84d); }
+.framework-card:nth-child(3)::before { background: linear-gradient(90deg, #865076, #b06a9a); }
+.framework-card:nth-child(4)::before { background: linear-gradient(90deg, #455361, #6b7f8e); }
+.framework-card:nth-child(5)::before { background: linear-gradient(90deg, #9CBF50, #b8d96a); }
+.framework-card:nth-child(6)::before { background: var(--grad-rainbow); }
+.framework-card:hover { box-shadow: 0 6px 24px rgba(0,97,131,0.15); transform: translateY(-2px); }
+.framework-header { padding: 18px 20px 12px; }
+.framework-num { font-size: 0.72rem; color: #999; font-weight: bold; letter-spacing: 0.08em; margin-bottom: 4px; }
+.framework-title { font-size: 1.05rem; font-weight: bold; color: var(--slate); }
+.framework-teaser { font-size: 0.85rem; color: #666; line-height: 1.5; margin-top: 6px; }
+.framework-body { display: none; padding: 0 20px 20px; }
+.framework-body.open { display: block; }
+.framework-expand-btn {
+  width: 100%; padding: 10px 20px; background: var(--teal-light);
+  border: none; border-top: 1px solid var(--border);
+  color: var(--teal); font-size: 0.8rem; font-weight: bold;
+  cursor: pointer; text-align: left; font-family: Arial, sans-serif;
+  transition: background 0.15s;
+}
+.framework-expand-btn:hover { background: #cce4ed; }
+.framework-body p { font-size: 0.88rem; line-height: 1.65; color: #333; margin-bottom: 10px; }
+.framework-body ul { padding-left: 18px; margin-bottom: 10px; }
+.framework-body li { font-size: 0.88rem; line-height: 1.6; color: #333; margin-bottom: 4px; }
+.callout {
+  padding: 12px 16px; border-radius: 6px;
+  font-size: 0.87rem; color: var(--slate); font-style: italic; margin: 12px 0;
+  background: linear-gradient(135deg, #e0eff5 0%, #f5ecf2 100%);
+  border-left: 4px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+.callout::before {
+  content: ''; position: absolute; left: -4px; top: 0; bottom: 0; width: 4px;
+  background: var(--grad-hero); border-radius: 4px 0 0 4px;
+}
+
+/* DIGITAL WORKFORCE */
+#workforce { background: var(--grad-dark); color: var(--white); }
+#workforce h2 { color: var(--white); }
+#workforce .section-label { background: var(--grad-rainbow); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+#workforce .section-intro { color: rgba(255,255,255,0.78); }
+.org-chart {
+  max-width: 780px; margin: 36px auto;
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+}
+.org-node {
+  border-radius: 8px; padding: 12px 24px; text-align: center;
+  font-weight: bold; font-size: 0.9rem; position: relative;
+  min-width: 200px;
+}
+.org-you { background: linear-gradient(135deg, #FFC000, #ffd84d); color: var(--black); box-shadow: 0 2px 10px rgba(255,192,0,0.4); }
+.org-cos { background: linear-gradient(135deg, #006183, #005070); color: var(--white); box-shadow: 0 2px 10px rgba(0,97,131,0.4); }
+.org-historian { background: linear-gradient(135deg, #865076, #a0637a); color: var(--white); box-shadow: 0 2px 8px rgba(134,80,118,0.3); }
+.org-director { background: #355068; color: var(--white); border: 1px solid rgba(255,255,255,0.2); }
+.org-civilian { background: #2d3f4e; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); font-style: italic; font-weight: normal; }
+.org-line {
+  width: 2px; height: 20px; background: rgba(255,255,255,0.3); margin: 0 auto;
+}
+.org-branch { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+.org-branch-group { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.org-note { font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 4px; text-align: center; }
+/* Historian off CoS */
+.cos-historian-row {
+  display: flex; align-items: flex-start; justify-content: center; gap: 0;
+}
+.cos-center-group { display: flex; flex-direction: column; align-items: center; }
+.historian-arm {
+  display: flex; align-items: center; margin-top: 22px;
+}
+.historian-hline {
+  width: 36px; height: 2px; background: linear-gradient(90deg, rgba(0,97,131,0.5), rgba(134,80,118,0.6));
+  flex-shrink: 0;
+}
+.historian-group { display: flex; flex-direction: column; align-items: center; }
+.workforce-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 36px; }
+.workforce-card {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px; padding: 18px;
+}
+.workforce-card h4 { color: var(--gold); font-size: 0.85rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+.workforce-card p { font-size: 0.85rem; color: rgba(255,255,255,0.8); line-height: 1.6; }
+.key-lesson {
+  background: rgba(255,193,0,0.12); border: 1px solid rgba(255,193,0,0.3);
+  border-radius: 6px; padding: 16px 20px; margin-top: 32px; text-align: center;
+  font-size: 1rem; font-style: italic; color: var(--gold);
+}
+
+/* TECHNICAL SKILLS */
+.skills-grid { display: flex; flex-direction: column; gap: 12px; }
+.skill-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.2s;
+}
+.skill-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+}
+.skill-card:nth-child(1)::before { background: linear-gradient(180deg, #006183, #66C7F1); }
+.skill-card:nth-child(2)::before { background: linear-gradient(180deg, #865076, #b06a9a); }
+.skill-card:nth-child(3)::before { background: linear-gradient(180deg, #9CBF50, #b8d96a); }
+.skill-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.skill-header {
+  padding: 18px 22px; cursor: pointer; display: flex;
+  justify-content: space-between; align-items: center;
+  transition: background 0.15s;
+}
+.skill-header:hover { background: var(--light-bg); }
+.skill-header h3 { font-size: 1rem; color: var(--slate); font-weight: bold; }
+.skill-arrow { color: var(--teal); transition: transform 0.2s; }
+.skill-arrow.open { transform: rotate(90deg); }
+.skill-body { display: none; padding: 4px 22px 22px; }
+.skill-body.open { display: block; }
+.skill-body ul { padding-left: 18px; margin-bottom: 10px; }
+.skill-body li { font-size: 0.9rem; line-height: 1.65; color: #333; margin-bottom: 4px; }
+.skill-body p { font-size: 0.9rem; line-height: 1.65; color: #333; margin-bottom: 8px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+/* TOOLS */
+.tools-section-header { color: var(--teal); font-weight: bold; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin: 28px 0 12px; border-bottom: 2px solid var(--teal-light); padding-bottom: 6px; }
+.tools-section-header:first-child { margin-top: 0; }
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 4px; }
+.tool-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.tool-name { font-weight: bold; font-size: 0.88rem; color: var(--slate); }
+.tool-desc { font-size: 0.8rem; color: #555; line-height: 1.45; }
+.tool-cost {
+  font-size: 0.72rem; font-weight: bold; padding: 2px 7px;
+  border-radius: 3px; align-self: flex-start; margin-top: 4px;
+}
+.cost-free { background: #edf6e0; color: #3d6b10; }
+.cost-paid { background: #fdecea; color: #8b1a1a; }
+.cost-freemium { background: #fff8e0; color: #7a5a00; }
+.cost-summary {
+  background: linear-gradient(135deg, #e0eff5 0%, #f5ecf2 100%);
+  border: 1px solid #c8dce6;
+  border-radius: 8px; padding: 18px 22px; margin-top: 28px;
+}
+.cost-summary h4 { background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; }
+.cost-summary ul { padding-left: 18px; }
+.cost-summary li { font-size: 0.88rem; line-height: 1.7; color: var(--slate); }
+
+/* TRAINING */
+.training-step {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 24px; overflow: hidden;
+}
+.training-step-header {
+  background: var(--grad-hero);
+  color: var(--white);
+  padding: 16px 24px; display: flex; align-items: center; gap: 14px;
+}
+.step-num {
+  background: var(--gold); color: var(--black);
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 0.9rem; flex-shrink: 0;
+}
+.training-step-header h3 { font-size: 1.05rem; }
+.training-step-body { padding: 20px 24px; }
+.training-step-body p { font-size: 0.9rem; line-height: 1.65; color: #333; margin-bottom: 10px; }
+.training-step-body ul { padding-left: 18px; margin-bottom: 12px; }
+.training-step-body li { font-size: 0.9rem; line-height: 1.65; color: #333; margin-bottom: 4px; }
+.teams-channels { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+.channel-card {
+  background: var(--light-bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 14px;
+}
+.channel-name { font-weight: bold; font-size: 0.85rem; color: var(--teal); margin-bottom: 3px; }
+.channel-desc { font-size: 0.78rem; color: #555; line-height: 1.4; }
+.session-arc { counter-reset: arc; }
+.session-arc li { list-style: none; padding-left: 28px; position: relative; }
+.session-arc li::before {
+  counter-increment: arc; content: counter(arc);
+  position: absolute; left: 0;
+  background: var(--teal); color: var(--white);
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: bold; top: 2px;
+}
+.questions-box {
+  background: #fff8e0; border: 1px solid #ffe066;
+  border-radius: 6px; padding: 16px 20px; margin-top: 20px;
+}
+.questions-box h4 { color: #7a5a00; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+.questions-box ul { padding-left: 18px; }
+.questions-box li { font-size: 0.88rem; color: #555; line-height: 1.65; margin-bottom: 4px; }
+
+/* SCREENSHOTS */
+.screenshot-group { margin-bottom: 36px; }
+.screenshot-group h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal); font-weight: bold; margin-bottom: 12px; border-bottom: 2px solid var(--teal-light); padding-bottom: 6px; }
+.screenshot-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.screenshot-link {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 4px; padding: 7px 14px;
+  font-size: 0.85rem; color: var(--teal); cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.screenshot-link:hover { background: var(--teal-light); border-color: var(--teal); }
+.screenshot-link::before { content: "↗"; font-size: 0.75rem; }
+
+/* LIGHTBOX */
+#lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88); z-index: 9999;
+  align-items: center; justify-content: center; flex-direction: column;
+  padding: 24px;
+}
+#lightbox.open { display: flex; }
+#lightbox-img {
+  max-width: 90vw; max-height: 80vh;
+  border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+#lightbox-caption {
+  color: rgba(255,255,255,0.8); font-size: 0.9rem;
+  margin-top: 14px; text-align: center;
+}
+#lightbox-close {
+  position: fixed; top: 20px; right: 28px;
+  color: var(--white); font-size: 2rem; cursor: pointer;
+  line-height: 1; opacity: 0.8; transition: opacity 0.15s;
+}
+#lightbox-close:hover { opacity: 1; }
+
+/* FOOTER */
+footer {
+  background: var(--grad-hero);
+  color: rgba(255,255,255,0.75);
+  text-align: center; padding: 28px; font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  section { padding: 48px 24px; }
+  #hero { padding: 48px 24px; }
+  #hero h1 { font-size: 1.9rem; }
+  nav { padding: 0 16px; }
+  .nav-links a { font-size: 0.72rem; padding: 5px 7px; }
+  .two-col { grid-template-columns: 1fr; }
+  .arc-row { gap: 4px; }
+  .arc-step { clip-path: none !important; border-radius: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox(event)">
+  <span id="lightbox-close" onclick="closeLightbox()">&times;</span>
+  <img id="lightbox-img" src="" alt="">
+  <p id="lightbox-caption"></p>
+</div>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-brand">AI Agent Mastermind</span>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#journey">Journey</a>
+    <a href="#frameworks">Frameworks</a>
+    <a href="#workforce">Workforce</a>
+    <a href="#skills">Skills</a>
+    <a href="#tools">Tools</a>
+    <a href="#training">Training</a>
+    <a href="#screenshots">Screenshots</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="inner" style="max-width:800px">
+    <h1>AI Agent Mastermind:<br>What I Learned</h1>
+    <p class="subhead">Prepared for Nick Thor, VP of AI &amp; Emerging Technology</p>
+    <p class="credit">Clare Mestre, Implementation Director &nbsp;·&nbsp; May 2026</p>
+    <div class="chips">
+      <span class="chip">9 Sessions</span>
+      <span class="chip">6 Core Frameworks</span>
+      <span class="chip">33+ Hours of Training</span>
+    </div>
+    <p style="margin-top: 28px; font-size: 1rem; color: rgba(255,255,255,0.75); max-width: 580px; margin-left: auto; margin-right: auto; line-height: 1.65;">Leveraging AI to optimize daily work, scale efficiency, and build systems that run without you.</p>
+  </div>
+</section>
+
+<!-- PROGRAM OVERVIEW -->
+<section id="overview">
+  <div class="inner">
+    <p class="section-label">Program Overview</p>
+    <h2>What Is the AI Agent Mastermind?</h2>
+    <p class="section-intro">A practitioner-led, cohort-based intensive taught by Allie Miller — one of the world's leading AI educators — designed for business professionals who want to go beyond chatbots and actually build things that work.</p>
+    <div class="arc-row">
+      <div class="arc-step">Foundation</div>
+      <div class="arc-step">Infrastructure</div>
+      <div class="arc-step">Building</div>
+      <div class="arc-step">Scaling</div>
+    </div>
+    <p style="font-size:0.9rem; color:#555; max-width:700px; line-height:1.65;">Nine sessions — live Q&amp;As, technical office hours, a capstone production build, and hands-on homework between every session.</p>
+  </div>
+</section>
+
+<!-- LEARNING JOURNEY -->
+<section id="journey">
+  <div class="inner">
+    <p class="section-label">Learning Journey</p>
+    <h2>The Nine Sessions</h2>
+    <p class="section-intro">Every session built on the one before it. Click any card to see what was covered, what the key concepts were, and what it means in practice.</p>
+    <div class="journey-list">
+
+      <!-- Session: Live Intro Q&A -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Live Intro Q&amp;A</div>
+            <div class="session-sub">Setup, environments, getting started, regulated industries</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>What Was Covered</h4>
+          <ul>
+            <li>Setting up consistent Claude Code, Cowork, and Terminal environments</li>
+            <li>Getting started with agents and scheduled tasks from day one</li>
+            <li>Dealing with corporate IT restrictions — workarounds for managed devices</li>
+            <li>File organization and persistence of markdown files across sessions</li>
+            <li>Managing multiple email accounts across different businesses</li>
+            <li>Working in regulated industries (HIPAA, PCI, finance): personal use cases are still valuable even when enterprise deployment isn't yet approved</li>
+            <li>Most people start with either terminal or desktop app, not both — pick one and go deep</li>
+          </ul>
+          <h4>Key Insight</h4>
+          <p>The file system stays consistent across Claude Code, Cowork, and Terminal — the main difference is tool connectivity. Skills must be brought separately into Cowork; the two systems don't share context automatically.</p>
+        </div>
+      </div>
+
+      <!-- Session 1 -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Session 1: Your First AI Agent</div>
+            <div class="session-sub">CLAUDE.md · Context Documents · Skill Creator · Add the Egg</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>Three Foundational Pieces</h4>
+          <ul>
+            <li><strong>CLAUDE.md</strong> — ~100 lines, acts as your AI's employee playbook. Sets core mindset, planning mode behavior, MCP tool configs, file organization rules, and pointers to context documents. Created through natural language — just talk to Claude and tell it what you want it to know.</li>
+            <li><strong>Context Documents</strong> — Files Claude reads when it wakes up: Personal Constitution, Team Context, Business Goals, Vendor/Client Lists, Service Descriptions. Stored in a "Master Context Documents" folder.</li>
+            <li><strong>Skill Creator</strong> — A meta-skill that lets Claude build new skills for itself. Better than writing skills manually. Install it first, then use it to build everything else.</li>
+          </ul>
+          <h4>Add the Egg</h4>
+          <p>The central creative principle of the program: go beyond the minimum viable output. A morning briefing could just list your calendar — but add weather, goal-alignment, quick tasks Claude assigns itself, delegation suggestions, local events, and a motivational quote. The "egg" is the extra feature that turns useful into delightful.</p>
+          <h4>Morning Briefing Example (built during Session 1)</h4>
+          <ul>
+            <li>Date and day of week with weather forecast</li>
+            <li>Energy readout and emoji-based mood system</li>
+            <li>Calendar summary with location details and prep notes</li>
+            <li>Context from goals document — "is today goal-aligned?"</li>
+            <li>Claude-assigned quick tasks for the day</li>
+            <li>Delegation suggestions for the team</li>
+            <li>Local events and fun facts</li>
+            <li>Motivational quote</li>
+          </ul>
+          <h4>Key Quotes</h4>
+          <p><em>"Claude is better at talking to Claude than you are at talking to Claude."</em></p>
+          <p><em>"Add the egg."</em></p>
+          <h4>MCP (Model Context Protocol)</h4>
+          <p>The universal connection standard between Claude and external tools (Gmail, Calendar, Slack, Notion, etc.). Cowork uses "Connectors" — toggle-based, no setup. Claude Code requires a bit more configuration but can be set up through natural language.</p>
+          <h4>Scheduling Options Introduced</h4>
+          <ul>
+            <li><strong>/schedule</strong> — Cloud-based, runs while you sleep, no local file access, minimum 1 hour. Recommended first choice.</li>
+            <li><strong>Cron jobs</strong> — Local execution, requires computer to be on, full file access, minimum 1 minute.</li>
+            <li><strong>Cowork scheduled tasks</strong> — UI-friendly, reliable, good for most users.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Get Fully Operational -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Get Fully Operational</div>
+            <div class="session-sub">Terminal setup · File management · Permissions · Voice dictation</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>What Was Covered</h4>
+          <ul>
+            <li>Installing Claude Code on Mac (Homebrew) and Windows</li>
+            <li>Terminal vs. iTerm2 (split windows, better UI) vs. VS Code terminal</li>
+            <li>Shell aliases: shortcut commands like <code>c</code> for <code>claude --chrome</code>, stored in <code>.zshrc</code></li>
+            <li>Flags: <code>--chrome</code> for browser access, <code>--enable-auto-mode</code> for smart permissions</li>
+            <li>File management: controlling where Claude saves files, naming conventions, folder structure to prevent desktop clutter</li>
+          </ul>
+          <h4>Voice Dictation</h4>
+          <p><strong>Wispr Flow</strong> (preferred): hold the function key, speak, release. 4x faster than typing. Used 50–150 times per day by power users. Skip the built-in <code>/voice</code> command — Wispr Flow is significantly better.</p>
+          <h4>Permission Levels</h4>
+          <ul>
+            <li><strong>Default (Ask Everything)</strong> — Most conservative. Approves every action. Leads to decision fatigue but good for learning.</li>
+            <li><strong>Allow List</strong> — Pre-approve common safe actions. Read files: always allow. Delete files: always ask.</li>
+            <li><strong>Auto Mode</strong> — "Santa mode": a mini model classifies actions as risky or safe. Asks only for genuinely risky ones. Best for experienced users.</li>
+            <li><strong>YOLO Mode</strong> — Skips all safety checks. Only use inside a Docker sandbox, never on real work.</li>
+          </ul>
+          <h4>What Claude Can Do</h4>
+          <ul>
+            <li>Read and write files, create and organize folders</li>
+            <li>Edit documents in place, handle images and PDFs</li>
+            <li>Access browser with Chrome extension (<code>/ss</code> for screenshots)</li>
+            <li>Run code, access APIs, connect to MCPs</li>
+            <li>Computer use (control mouse and keyboard — use carefully)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Session 2 -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Session 2: AI Agent Operating System</div>
+            <div class="session-sub">File systems · Privacy · Memory management · Progressive trust</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>How Claude Wakes Up (Context Stack)</h4>
+          <ul>
+            <li>Model base personality (Opus 4.7, etc.)</li>
+            <li>CLAUDE.md file(s) — stacked, more specific files take priority</li>
+            <li>memory.md file (if exists)</li>
+            <li>Skill summaries (not full contents)</li>
+            <li>Project metadata and folder names</li>
+            <li><em>Does NOT automatically get:</em> file contents, subfolder files, MCPs not yet called</li>
+          </ul>
+          <h4>Project Organization ("Goldilocks Principle")</h4>
+          <p>Projects are dedicated folders for multi-session efforts. Not too broad ("Sales"), not too narrow ("Cold email replies") — find the right scope. Good example: "Enterprise Renewals." Bad: "Sales" (too broad). Access via <code>cd ~/.claude/projects/ProjectName</code> then <code>claude</code>.</p>
+          <h4>Progressive Trust Model</h4>
+          <ul>
+            <li><strong>Level 1 — Ask Everything:</strong> Approves every action. Good for learning, leads to fatigue long-term.</li>
+            <li><strong>Level 2 — Allow List:</strong> Build approved actions over time. Gradually reduce friction for safe operations.</li>
+            <li><strong>Level 3 — Auto Mode:</strong> Classifies risky vs. safe. Asks only for genuinely risky actions. Enables multi-threading.</li>
+            <li><strong>Level 4 — YOLO:</strong> Skip all checks. Only in sandboxed environments for research tasks.</li>
+          </ul>
+          <h4>Data Privacy: What Actually Happens</h4>
+          <ul>
+            <li>File lives on your computer until you input it into Claude</li>
+            <li>Your prompt + file sent to Anthropic's API (Arizona/Wyoming data center)</li>
+            <li>Model processes in cloud, response returns</li>
+            <li>By default, data is <strong>NOT used for training</strong> (opt-out automatic since 2024)</li>
+            <li>30-day retention for moderation purposes only</li>
+            <li>Enterprise options: AWS Bedrock or Google Vertex (data never leaves your cloud)</li>
+          </ul>
+          <h4>Memory Management</h4>
+          <ul>
+            <li><strong>Auto Memory</strong> — Built-in, default on. Use <code>/memory</code> to view, <code>remember [thing]</code> to save. Still imperfect — treat as supplementary.</li>
+            <li><strong>Manual Updates</strong> — More reliable: "Remember that…" commands, updating CLAUDE.md, updating context documents.</li>
+            <li><strong>Claudeopedia</strong> — Personal knowledge base using Obsidian. Connects sources (transcripts, articles), creates knowledge graph. Portable to any AI system.</li>
+          </ul>
+          <h4>Key Concept</h4>
+          <p><em>"Files are all you need."</em> — A clean, well-organized file system is the foundation of every powerful AI system.</p>
+        </div>
+      </div>
+
+      <!-- Technical Office Hours 1 -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Technical Office Hours #1</div>
+            <div class="session-sub">GitHub · API security · Team setup · Tool comparisons</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>Key Topics</h4>
+          <ul>
+            <li><strong>GitHub is how you sync skills across devices</strong> — version control everything. Update skill → commit → push → pull on another device. Claude writes the commit messages.</li>
+            <li><strong>API key security</strong> — Use environment variables (stored in <code>.profile</code> on Mac). Never paste keys in chat. Set monthly billing limits. Reference by name, not value.</li>
+            <li><strong>Claude Code vs. Cowork vs. Web App</strong> — Claude Code has all capabilities plus more. Cowork is better for visual people who want artifacts. Web app: only for quick one-off questions.</li>
+            <li><strong>Team setup (4 people)</strong> — Use GitHub for skill sharing. One account per person with access to a shared repo. Better rate limits on one coordinated account vs. per-person.</li>
+            <li><strong>Context7.com</strong> — API/MCP marketplace. Search for any service; everything packaged for Claude Code.</li>
+          </ul>
+          <h4>CLAUDE.md vs. Skill vs. Context Doc: When to Use Which</h4>
+          <ul>
+            <li><strong>CLAUDE.md</strong> — First instructions, orientation for a directory or project</li>
+            <li><strong>Skills</strong> — Reusable across projects, carry everywhere</li>
+            <li><strong>Context docs</strong> — Reference files, pulled in when needed, not in chat</li>
+            <li><em>Use reference files in CLAUDE.md to avoid token bloat</em></li>
+          </ul>
+          <h4>Key Lesson</h4>
+          <p>Lower-level tools (Claude Code) are harder to start with but meaningfully more powerful. The investment pays off quickly.</p>
+        </div>
+      </div>
+
+      <!-- Capstone -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Capstone: AI First Operations</div>
+            <div class="session-sub">Live CRM build · Connect → Continue → Compound · 3-agent architecture</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>The Problem</h4>
+          <p>A lean ops team managing hundreds of conversations with no connective tissue across tools — Gmail, Notion, meeting transcripts, Slack, Calendar — and no persistent context between sessions.</p>
+          <h4>The Solution: Custom AI-Powered CRM</h4>
+          <p>Built using Claude Code + Notion + Slack. Three discrete agents with narrow responsibilities replacing one massive agent that had been failing at 72% context compaction.</p>
+          <h4>Three-Agent Architecture</h4>
+          <ul>
+            <li><strong>Agent 1 — The Bookkeeper (CRM Sync)</strong>: Runs twice daily. Validates Notion data before and after updates. Ensures data integrity — names, duplicates, status fields.</li>
+            <li><strong>Agent 2 — The Workhorse (Client Intelligence)</strong>: Gathers from Gmail, calendar, meeting transcripts. Scans in parallel (2-week lookback, 200 results). Plans all Notion updates. Writes clean data.</li>
+            <li><strong>Agent 3 — The Intelligence (Warmth Report)</strong>: Reads clean data from shared file. Complex analysis: deals at risk, days since last contact, prioritization. Posts daily report to Slack.</li>
+          </ul>
+          <h4>Connect → Continue → Compound (The Three-Question Test)</h4>
+          <ul>
+            <li><strong>Connect?</strong> — Does it link multiple tools/data sources? If single source: it's just automation.</li>
+            <li><strong>Continue?</strong> — Does it run without you? Can you go on vacation and it keeps working?</li>
+            <li><strong>Compound?</strong> — Does it start small and get smarter? Can you add layers without rebuilding?</li>
+          </ul>
+          <h4>Best Practices Demonstrated</h4>
+          <ul>
+            <li>Discrete agents with narrow focus: when something breaks, you know exactly where to look</li>
+            <li>Shared CLAUDE.md: global CRM instructions apply to all three agents</li>
+            <li>Step-by-step execution strips: not just personas, detailed instructions (e.g., "Search Gmail max 200 results, match by domain, write to JSON")</li>
+            <li>Ship early, audit often: these systems degrade without regular attention</li>
+          </ul>
+          <h4>Key Lesson</h4>
+          <p><em>"Build your agents like you'd hire for your best team — clear roles, clear expectations, and no ambiguity about what success looks like."</em></p>
+        </div>
+      </div>
+
+      <!-- Session 3 -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Session 3: Build Something You Can Sell</div>
+            <div class="session-sub">Web apps · PRDs · Deployment · Payments · Testing personas</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>The Build vs. Buy Shift</h4>
+          <p>The old approach: evaluate 3 existing solutions. The new approach: can I build this myself in a weekend? A 50% solution giving 90% of the value — tuned exactly to your needs — often beats any off-the-shelf product.</p>
+          <h4>Four Levels of App Builds</h4>
+          <ul>
+            <li><strong>Level 1 — Share with a few people:</strong> Artifact in Claude (public), Google AI Studio (password-protected), GitHub Team (private). Set up in minutes. Good for internal prototypes.</li>
+            <li><strong>Level 2 — Share with the world:</strong> Personal website, interactive tools on Replit or Lovable, embed in existing site. No infrastructure required.</li>
+            <li><strong>Level 3 — Add AI functionality:</strong> Claude API calls in-app for real-time generation. Lead gen tools, visualization tools, personalized experiences.</li>
+            <li><strong>Level 4 — Charge for it:</strong> Google SSO for logins, Stripe for subscriptions, webhooks for payment confirmation, secrets in Vercel.</li>
+          </ul>
+          <h4>Deployment Flow</h4>
+          <p>Code and test locally (localhost) → Push to GitHub (Claude writes the commit) → GitHub auto-triggers Vercel → Live in seconds.</p>
+          <h4>PRD: Write Before You Build</h4>
+          <p>A Product Requirements Document is 200+ lines written before a line of code. It covers: problem statement, user stories, input/output specs, architecture recommendations, and design guidelines. It aligns you with Claude before building, prevents wasted effort, and dramatically improves output quality.</p>
+          <h4>Four Personas Testing Framework</h4>
+          <ul>
+            <li><strong>The Creator (you)</strong> — Usage analytics, daily spend cap, review logs</li>
+            <li><strong>The Happy User</strong> — Easy sharing, clear prompts, error-free flows</li>
+            <li><strong>The Accidental User</strong> — Disclaimers, guidance, helpful error messages</li>
+            <li><strong>The Adversary</strong> — Prompt injection protection, input length limits, API abuse prevention</li>
+          </ul>
+          <h4>API Key Security Rules</h4>
+          <ul>
+            <li>Set a hard monthly billing limit on your account</li>
+            <li>Store keys in environment variables — never hardcode</li>
+            <li><code>.env</code> files are excluded from GitHub automatically</li>
+            <li>Store production secrets in Vercel, not in your codebase</li>
+          </ul>
+          <h4>Competitive Moat Timing</h4>
+          <ul>
+            <li>2 minutes to build = instantly copied, no moat</li>
+            <li>2–8 hours = defensible moat (the sweet spot)</li>
+            <li>2+ weeks = significant but high scaling cost</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Technical Office Hours 2 -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Technical Office Hours #2</div>
+            <div class="session-sub">VS Code · GitHub best practices · Memory · Responsive design</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>Key Topics</h4>
+          <ul>
+            <li><strong>VS Code integration</strong> — Better visibility than terminal-only. Red highlights show changed files. Easy to supervise large agent runs. Simple changes are obvious; complex ones benefit from visual diff.</li>
+            <li><strong>Don't trust the built-in memory feature yet</strong> — Still an early product, unreliable. Rely on skills + CLAUDE.md for reliable persistence. If you want something remembered: write it to a file in a known location.</li>
+            <li><strong>GitHub best practices</strong> — Commit every 2 hours. Let Claude write 400-word commit messages. Easy revert to specific points. Never store git repos in Google Drive — two sync systems fight each other.</li>
+            <li><strong>Responsive design</strong> — Claude often lies about mobile responsiveness. Take actual screenshots on device. Flag specific failing elements. Define design guidelines in detail (fonts, colors, breakpoints) before building.</li>
+            <li><strong>Permissions in <code>.claude/settings.json</code></strong> — Pre-configure defaults. "Always allow" button persists across sessions. Always allow: read files, basic commands. Keep gated: edits, deletions.</li>
+          </ul>
+          <h4>Sharing Skills Across a Team</h4>
+          <p>Create a GitHub repo with shared skills organized by function (marketing, operations, comms). Each team member forks or clones. Option for a private fork of Claude's repo with all shared skills included. Full team access, version-controlled, easy to audit.</p>
+        </div>
+      </div>
+
+      <!-- Session 4 -->
+      <div class="session-card">
+        <div class="session-header" onclick="toggleSession(this)">
+          <div>
+            <div class="session-title">Session 4: Building Your Digital Workforce</div>
+            <div class="session-sub">Multi-agent systems · Chief of Staff model · Orchestration · Scale</div>
+          </div>
+          <span class="session-arrow">▶</span>
+        </div>
+        <div class="session-body">
+          <h4>Important Framing</h4>
+          <p>This is about workforce <em>multiplication</em>, not replacement. Agents as infrastructure that extends what a human can do — not a substitute for judgment, strategy, or relationships.</p>
+          <h4>Where Most Users Are</h4>
+          <ul>
+            <li>99% of users: assistant mode (back-and-forth chat)</li>
+            <li>Super users: agent mode (complete tasks, take action)</li>
+            <li>The frontier: workforce mode (multiple agents orchestrated together)</li>
+          </ul>
+          <h4>Skills vs. Capital-A Agents</h4>
+          <ul>
+            <li><strong>Skills (lowercase)</strong>: Inherit global context and permissions. Same model as chat. Sequential execution. Easy to share. Good for most tasks.</li>
+            <li><strong>Agents (capital A)</strong>: Specify model explicitly. Define tool access. Can run in parallel. Limited context (you control what they see). Better cost control. Better safety boundaries.</li>
+          </ul>
+          <h4>Speed Difference</h4>
+          <p>With skills: everything runs sequentially. With agents: 5 parallel agents complete in the time of the slowest one. 20 agents on different subtasks = same clock time as 1. This is a fundamental shift for complex work.</p>
+          <h4>Digital Workforce Evolution</h4>
+          <ul>
+            <li><strong>Version 1 (Flat Org)</strong> — 3 directors, all same model, no coordination, you manage all of them directly. Simple to start but doesn't scale.</li>
+            <li><strong>Version 2 (Hierarchical)</strong> — 6 directors, each with specialists. More coordination. More capable.</li>
+            <li><strong>Version 3 (Chief of Staff)</strong> — One CoS agent is the only agent you interact with. CoS orchestrates 6 directors. Historian agent embedded with CoS for continuous memory. Civilian agents spun up for specific tasks. Much better delegation.</li>
+          </ul>
+          <h4>Common Mistakes</h4>
+          <ul>
+            <li>Using Opus for everything — slow and expensive. Use Sonnet/Haiku for non-critical tasks.</li>
+            <li>Going YOLO mode on complex multi-agent systems — dangerous</li>
+            <li>Under-investing in orchestration, memory, and observability</li>
+            <li>One massive agent instead of discrete focused ones</li>
+            <li>Using real people's names for agents — causes confusion</li>
+          </ul>
+          <h4>Key Insight</h4>
+          <p>The best companies prioritizing AI are winning not on model quality but on speed of iteration. Teams of 2–6 with strong AI infrastructure are outcompeting teams 10x their size.</p>
+        </div>
+      </div>
+
+    </div><!-- end journey-list -->
+  </div>
+</section>
+
+<!-- CORE FRAMEWORKS -->
+<section id="frameworks" style="background: var(--light-bg)">
+  <div class="inner">
+    <p class="section-label">Core Frameworks</p>
+    <h2>Six Frameworks That Change How You Work</h2>
+    <p class="section-intro">These are the ideas I kept coming back to. Not technical concepts — thinking patterns. The difference between people who get real value from AI and people who don't usually comes down to whether they've internalized something like these.</p>
+    <div class="frameworks-grid">
+
+      <div class="framework-card">
+        <div class="framework-header" onclick="toggleFramework(this)">
+          <div class="framework-num">FRAMEWORK 01</div>
+          <div class="framework-title">Build Your Foundation</div>
+          <div class="framework-teaser">The three pieces every AI system needs before anything else works.</div>
+        </div>
+        <button class="framework-expand-btn" onclick="toggleFramework(this.parentElement.querySelector('.framework-header'))">Read more ▾</button>
+        <div class="framework-body">
+          <p>Without a foundation, every Claude session starts from scratch. With one, your AI acts like a trained employee who already knows your context, your priorities, and how you like to work.</p>
+          <ul>
+            <li><strong>CLAUDE.md</strong> — Your AI's employee playbook. ~100 lines. Sets the core mindset (e.g., "think like my chief of staff"), planning mode instructions, MCP tool configs, file organization rules, and pointers to your context documents. Create it through natural language: just tell Claude what you want it to know.</li>
+            <li><strong>Context Documents</strong> — What Claude needs to know about <em>you</em>: your role, your goals, your team, your vendors, your service lines. Stored in a "Master Context Documents" folder. Updated through conversation. Referenced in CLAUDE.md so they load without you having to paste them every session.</li>
+            <li><strong>Skill Creator</strong> — A meta-skill that lets Claude build new skills for itself. Better than writing skills manually. Install this first, then use it to build every other skill you need.</li>
+          </ul>
+          <div class="callout">Without CLAUDE.md and context documents, you're starting every session explaining who you are. With them, Claude already knows — and it remembers what you care about.</div>
+        </div>
+      </div>
+
+      <div class="framework-card">
+        <div class="framework-header" onclick="toggleFramework(this)">
+          <div class="framework-num">FRAMEWORK 02</div>
+          <div class="framework-title">Add the Egg</div>
+          <div class="framework-teaser">Go beyond the minimum. Every workflow should have delight built in.</div>
+        </div>
+        <button class="framework-expand-btn" onclick="toggleFramework(this.parentElement.querySelector('.framework-header'))">Read more ▾</button>
+        <div class="framework-body">
+          <p>The principle: never ship a workflow that just does the minimum. Ask, "What if I added X to make this even better?" Each addition is small, but the compound effect turns something functional into something people actually want to use.</p>
+          <p><strong>Example:</strong> A morning briefing could just list your calendar. But add weather, an energy/mood score, goal-alignment context, Claude-assigned quick tasks, delegation suggestions, local events for the day, and a closing motivational quote — and it becomes the first thing you open every morning.</p>
+          <ul>
+            <li>Start with the minimum viable version</li>
+            <li>Test it with one real user (yourself)</li>
+            <li>After each use, ask: "What's the one thing missing?"</li>
+            <li>Add that one thing. Test again. Repeat.</li>
+          </ul>
+          <div class="callout">The instructor built 10+ versions of her morning briefing before it felt right. That's not failure — that's the whole point. The willingness to keep iterating is what separates people who build tools they actually use from people who have nice demos.</div>
+        </div>
+      </div>
+
+      <div class="framework-card">
+        <div class="framework-header" onclick="toggleFramework(this)">
+          <div class="framework-num">FRAMEWORK 03</div>
+          <div class="framework-title">Builder Framework</div>
+          <div class="framework-teaser">Start with the problem. Design the solution. Map the workflow. Add the egg.</div>
+        </div>
+        <button class="framework-expand-btn" onclick="toggleFramework(this.parentElement.querySelector('.framework-header'))">Read more ▾</button>
+        <div class="framework-body">
+          <p>The most common mistake new builders make: starting with the technology. The Builder Framework forces you to start with the problem instead.</p>
+          <ul>
+            <li><strong>Step 1: Define the problem</strong> — What friction exists? What takes too long, gets dropped, or requires manual effort every time?</li>
+            <li><strong>Step 2: Design the solution</strong> — What would it look like if that friction disappeared? Ignore implementation for now.</li>
+            <li><strong>Step 3: Map the workflow</strong> — What triggers it? What does it do? What's the output? Who receives it?</li>
+            <li><strong>Step 4: Add the egg</strong> — Now that the baseline is defined, what additional feature would make this genuinely delightful?</li>
+          </ul>
+          <p>Then go into plan mode with Claude, walk through the four steps, and build. Don't build first and plan later.</p>
+          <div class="callout">Technology for its own sake is the fastest path to a tool no one uses. Start with the real problem. Build the simplest version that solves it. Then make it remarkable.</div>
+        </div>
+      </div>
+
+      <div class="framework-card">
+        <div class="framework-header" onclick="toggleFramework(this)">
+          <div class="framework-num">FRAMEWORK 04</div>
+          <div class="framework-title">Progressive Trust Model</div>
+          <div class="framework-teaser">Build AI confidence in layers — not all at once.</div>
+        </div>
+        <button class="framework-expand-btn" onclick="toggleFramework(this.parentElement.querySelector('.framework-header'))">Read more ▾</button>
+        <div class="framework-body">
+          <p>Giving an AI system full autonomy on day one is like handing your car keys to someone you just met. The Progressive Trust Model is a governance framework for expanding AI access responsibly.</p>
+          <ul>
+            <li><strong>Level 1 — Ask Everything:</strong> Claude requests approval before every action. Conservative, exhausting, but excellent for learning what the system actually does.</li>
+            <li><strong>Level 2 — Allow List:</strong> Pre-approve common low-risk actions (read files, search the web). Keep gates on high-risk actions (delete files, push to production). Build this list iteratively.</li>
+            <li><strong>Level 3 — Auto Mode:</strong> A lightweight model classifies actions as risky or safe. Claude handles safe actions autonomously and asks only for the risky ones. Enables multi-threading without decision fatigue.</li>
+            <li><strong>Level 4 — Sandboxed YOLO:</strong> Full autonomy within an isolated environment (Docker container). No real data. For experiments, research, and overnight tasks. Never on production systems.</li>
+          </ul>
+          <div class="callout">The goal isn't maximum autonomy. It's the right level of trust for each situation. Move deliberately. Expand access as you earn confidence — in the system and in yourself.</div>
+        </div>
+      </div>
+
+      <div class="framework-card">
+        <div class="framework-header" onclick="toggleFramework(this)">
+          <div class="framework-num">FRAMEWORK 05</div>
+          <div class="framework-title">Connect → Continue → Compound</div>
+          <div class="framework-teaser">The three-question test for real AI workflows vs. dressed-up automation.</div>
+        </div>
+        <button class="framework-expand-btn" onclick="toggleFramework(this.parentElement.querySelector('.framework-header'))">Read more ▾</button>
+        <div class="framework-body">
+          <p>Before investing in any AI system, run it through these three questions:</p>
+          <ul>
+            <li><strong>Connect?</strong> — Does it link multiple tools or data sources together? An AI that only touches one system is just automation with better text. Value comes from the connections between systems.</li>
+            <li><strong>Continue?</strong> — Does it keep running without you present? Can you go on vacation and the system still works? If it stops when you stop, it's a detractor from your workday, not an addition.</li>
+            <li><strong>Compound?</strong> — Does it start small and get smarter? Can you add layers without rebuilding? You want a system designed for today that was architected for tomorrow.</li>
+          </ul>
+          <div class="callout">If your workflow answers yes to all three, you have a real system — one that compounds over time. If it fails one, you now know exactly what's missing and what to build next.</div>
+        </div>
+      </div>
+
+      <div class="framework-card">
+        <div class="framework-header" onclick="toggleFramework(this)">
+          <div class="framework-num">FRAMEWORK 06</div>
+          <div class="framework-title">Learn → Adapt → Make It Yours</div>
+          <div class="framework-teaser">The fastest path from "I saw something that works" to "I have something that works for me."</div>
+        </div>
+        <button class="framework-expand-btn" onclick="toggleFramework(this.parentElement.querySelector('.framework-header'))">Read more ▾</button>
+        <div class="framework-body">
+          <p>The creative shortcut that accelerates every build: you don't have to invent from scratch, and you shouldn't copy blindly. The three-step process:</p>
+          <ul>
+            <li><strong>Learn:</strong> Screenshot, save, or note anything that works well — a workflow, a prompt structure, an interface pattern, a skill template. Build a collection.</li>
+            <li><strong>Adapt:</strong> Feed it to Claude with context about your situation. "Here's what this person built. Here's how my situation is different. What should we change?"</li>
+            <li><strong>Make It Yours:</strong> Take the adapted version, run it, iterate on it. The result will be tuned to your exact context, team, and goals — not a generic template.</li>
+          </ul>
+          <p>Less than 20 words of prompting often needed. Faster than building from scratch. Smarter than copying directly.</p>
+          <div class="callout">The best builders aren't the most original. They're the fastest at seeing what works, understanding why, and making it their own. That's a learnable skill — and it compounds.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DIGITAL WORKFORCE -->
+<section id="workforce">
+  <div class="inner">
+    <p class="section-label">Building Your Digital Workforce</p>
+    <h2>The Chief of Staff Model</h2>
+    <p class="section-intro">Building a digital workforce means thinking about AI the same way you'd think about building a great human team: how many people can you realistically manage directly, what distinct roles do you need, and what skill sets fill the gaps? A well-structured agent hierarchy has clear roles, clear reporting lines, and a single point of contact — so you never have to remember who does what or manage everyone individually. Your Chief of Staff handles the delegation.</p>
+
+    <div class="org-chart">
+      <div class="org-node org-you">YOU</div>
+      <div class="org-note" style="margin-bottom:0">delegate outcomes, handle exceptions</div>
+      <div class="org-line"></div>
+
+      <!-- CoS with Historian branching off to the side -->
+      <div class="cos-historian-row">
+        <div class="cos-center-group">
+          <div class="org-node org-cos">Chief of Staff (CoS)</div>
+          <div class="org-note">the ONLY agent you talk to directly</div>
+        </div>
+        <div class="historian-arm">
+          <div class="historian-hline"></div>
+          <div class="historian-group">
+            <div class="org-node org-historian">Historian</div>
+            <div class="org-note">always on, captures<br>every session</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="org-line"></div>
+      <div class="org-branch">
+        <div class="org-branch-group">
+          <div class="org-node org-director">Director A</div>
+          <div class="org-note">owns one lane</div>
+          <div class="org-line" style="height:14px"></div>
+          <div class="org-node org-director" style="min-width:160px; font-size:0.78rem; padding:8px 14px;">Specialist(s)</div>
+        </div>
+        <div class="org-branch-group">
+          <div class="org-node org-director">Director B</div>
+          <div class="org-note">owns one lane</div>
+          <div class="org-line" style="height:14px"></div>
+          <div class="org-node org-director" style="min-width:160px; font-size:0.78rem; padding:8px 14px;">Specialist(s)</div>
+        </div>
+        <div class="org-branch-group">
+          <div class="org-node org-civilian">Civilians</div>
+          <div class="org-note">spun up for one task,<br>then dissolved</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workforce-grid">
+      <div class="workforce-card">
+        <h4>Chief of Staff</h4>
+        <p>The only agent you talk to directly. Receives outcomes from you, decides which Directors to involve, sequences the work, synthesizes results. Thinks ahead: "What's the best version of what she'd want — not just the literal request?"</p>
+      </div>
+      <div class="workforce-card">
+        <h4>The Historian</h4>
+        <p>Solves the hardest problem in AI systems: memory. Always running alongside the CoS. Continuously takes notes, documents decisions, captures key context. No more losing thread between sessions. Institutional memory that persists.</p>
+      </div>
+      <div class="workforce-card">
+        <h4>Directors</h4>
+        <p>Each owns one functional lane — communications, research, operations, etc. The CoS delegates to Directors; Directors manage their own Specialists. Directors never reach across each other's lanes. Clear accountability, no overlap.</p>
+      </div>
+      <div class="workforce-card">
+        <h4>Civilians</h4>
+        <p>Temporary, task-specific agents. Spun up by Directors for a single focused task, then dissolved. Ephemeral by design. Use the cheapest model (Haiku). Don't accumulate — create and dissolve.</p>
+      </div>
+      <div class="workforce-card">
+        <h4>Model Tiering</h4>
+        <p>Cost control through deliberate model selection. Opus (most capable, most expensive): CoS only. Sonnet (balanced): Directors. Haiku (fast, cheap): Specialists and Civilians. Don't use Opus everywhere — it's slow and costly for routine tasks.</p>
+      </div>
+      <div class="workforce-card">
+        <h4>Lane Discipline</h4>
+        <p>The rule that makes orchestration work: Directors own their lane and never reach into another Director's team. When two lanes overlap, the CoS handles coordination — not the Directors directly. Codified in each Director's instructions.</p>
+      </div>
+    </div>
+
+    <div class="key-lesson">"Build your agents like you'd hire for your best team — clear roles, clear expectations, and no ambiguity about what success looks like."</div>
+  </div>
+</section>
+
+<!-- TECHNICAL SKILLS -->
+<section id="skills" style="background: var(--light-bg)">
+  <div class="inner">
+    <p class="section-label">Technical Skills</p>
+    <h2>What You Need to Know to Build</h2>
+    <p class="section-intro">Three capability areas covered across the program. Click each to expand the full detail.</p>
+    <div class="skills-grid">
+
+      <div class="skill-card">
+        <div class="skill-header" onclick="toggleSkill(this)">
+          <h3>Claude Code &amp; Terminal</h3>
+          <span class="skill-arrow">▶</span>
+        </div>
+        <div class="skill-body">
+          <div class="two-col">
+            <div>
+              <p><strong>What Claude Code Is</strong></p>
+              <p>Claude's command-line interface. More powerful than the web app: persistent file access, local execution, full MCP connectivity, project memory, and the ability to run scheduled tasks overnight while you sleep.</p>
+              <p><strong>Getting Set Up</strong></p>
+              <ul>
+                <li>Mac: install via Homebrew. Windows: equivalent package manager.</li>
+                <li>iTerm2 as an alternative to default Terminal (split windows, better UI)</li>
+                <li>VS Code integration: see file changes in real time as Claude works</li>
+                <li>Shell aliases in <code>.zshrc</code>: create shortcuts like <code>c</code> for <code>claude --chrome</code></li>
+              </ul>
+              <p><strong>CLAUDE.md Structure</strong></p>
+              <ul>
+                <li>Core Mindset — how you want Claude to think and prioritize</li>
+                <li>Planning — when to use plan mode, how to get approval</li>
+                <li>Code Quality — standards and patterns to follow</li>
+                <li>Proactivity — when to suggest, when to wait</li>
+                <li>Task Endings — what to do when finished ("What else can I do?")</li>
+                <li>MCP Tools — which connections are always available</li>
+                <li>File Organization — where to save what, naming conventions</li>
+                <li>Memory — how to persist and reference information</li>
+              </ul>
+            </div>
+            <div>
+              <p><strong>Common Install Issues</strong></p>
+              <ul>
+                <li><code>command not found: claude</code> → PATH not set. Restart terminal.</li>
+                <li>PowerShell syntax errors → Open PowerShell specifically (not CMD)</li>
+                <li>macOS <code>dyld: cannot load</code> → Requires macOS 13.0+</li>
+                <li>TLS/SSL errors → Firewall or VPN. Try different network or disable VPN.</li>
+                <li>"Machine Type Mismatch" → Wrong binary. Use <code>winget install Anthropic.Claude</code></li>
+              </ul>
+              <p><strong>Permission Levels</strong></p>
+              <ul>
+                <li><strong>Ask Everything</strong> — approves every action; best for learning</li>
+                <li><strong>Allow List</strong> — pre-approve common safe actions</li>
+                <li><strong>Auto Mode</strong> — classifies risky vs. safe automatically</li>
+                <li><strong>Sandboxed YOLO</strong> — full autonomy inside isolated container only</li>
+              </ul>
+              <p><strong>Keyboard Shortcut</strong></p>
+              <p><code>Control+E</code> — explains any pending action in plain language before you approve it.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-header" onclick="toggleSkill(this)">
+          <h3>Web App Development</h3>
+          <span class="skill-arrow">▶</span>
+        </div>
+        <div class="skill-body">
+          <div class="two-col">
+            <div>
+              <p><strong>The Four Build Levels</strong></p>
+              <ul>
+                <li><strong>Level 1 — Share privately:</strong> Artifact in Claude (public link), Google AI Studio (password-protected), GitHub Team (private). Ready in minutes. Best for internal prototypes and testing with a small group.</li>
+                <li><strong>Level 2 — Share publicly:</strong> Personal website, tools on Lovable or Replit, embedded in Squarespace. No server management needed.</li>
+                <li><strong>Level 3 — Add AI:</strong> Claude API calls inside the app for real-time generation. Personalized tools, lead gen, interactive analysis.</li>
+                <li><strong>Level 4 — Charge for it:</strong> Google SSO for authentication, Stripe for subscriptions, Vercel for hosting + secrets management.</li>
+              </ul>
+              <p><strong>Deployment Flow</strong></p>
+              <p>Build locally on localhost → Push to GitHub (Claude writes the commit message) → GitHub auto-triggers Vercel deployment → Live in under a minute.</p>
+            </div>
+            <div>
+              <p><strong>PRD: Write Before You Build</strong></p>
+              <p>A Product Requirements Document is the most important thing you write before touching code. 200+ lines covering: problem statement, user personas, user stories ("As a user, I can…"), input/output specs, architecture, design guidelines. It aligns you with Claude and prevents wasted rebuilds.</p>
+              <p><strong>Four Personas Testing</strong></p>
+              <ul>
+                <li><strong>Creator (you):</strong> analytics, spend cap, review logs</li>
+                <li><strong>Happy User:</strong> easy sharing, clear flows, zero errors</li>
+                <li><strong>Accidental User:</strong> helpful error messages, guardrails, disclaimers</li>
+                <li><strong>Adversary:</strong> prompt injection protection, input limits, API abuse prevention</li>
+              </ul>
+              <p>For each persona: what do they want? How can this go wrong? What low-effort feature prevents that? Build the highest-priority items first.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-header" onclick="toggleSkill(this)">
+          <h3>Multi-Agent Systems</h3>
+          <span class="skill-arrow">▶</span>
+        </div>
+        <div class="skill-body">
+          <div class="two-col">
+            <div>
+              <p><strong>Skills vs. Capital-A Agents</strong></p>
+              <ul>
+                <li><strong>Skills</strong>: inherit all global context and permissions, same model as chat, run sequentially, easy to share across projects. Good for most tasks.</li>
+                <li><strong>Agents</strong>: you specify the model (Opus/Sonnet/Haiku), define tool access explicitly, can run in parallel, receive only the context you give them. Better cost control, better safety isolation.</li>
+              </ul>
+              <p>The speed difference is significant: 5 agents in parallel complete in the time of the slowest one, not the sum of all five.</p>
+              <p><strong>Why One Big Agent Fails</strong></p>
+              <ul>
+                <li>Context compaction: loses track of what it was doing mid-task</li>
+                <li>Unclear failure points: when it breaks, you don't know where</li>
+                <li>Slow: everything sequential, no parallelism</li>
+                <li>Hard to update: change one thing, everything else shifts</li>
+              </ul>
+            </div>
+            <div>
+              <p><strong>The Fix: Discrete Focused Agents</strong></p>
+              <ul>
+                <li>One agent = one narrow responsibility</li>
+                <li>Agents pass clean outputs to each other via shared files</li>
+                <li>When something breaks, you know which agent to fix</li>
+                <li>Each agent can be updated without affecting others</li>
+              </ul>
+              <p><strong>Sub-Agents and Hooks</strong></p>
+              <ul>
+                <li><strong>Sub-agents</strong>: Agents that spin up autonomously within a larger task when the scope grows too big. Claude creates these automatically when needed, or you can specify them.</li>
+                <li><strong>Hooks</strong>: "Before X happens, do Y" or "After X completes, do Z." Automated logic attached to events in your system.</li>
+              </ul>
+              <p><strong>Agent Teams Feature</strong></p>
+              <p>Built-in Claude Code feature: multiple agents share files and pass notes back and forth. Token-heavy and slow. Use sparingly (once a week for major complex problems). Great for: getting multiple "perspectives" on a strategy, running parallel research on different angles, board-room-style debates.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section id="tools">
+  <div class="inner">
+    <p class="section-label">Tools &amp; Ecosystem</p>
+    <h2>The Full Stack</h2>
+    <p class="section-intro">Every tool covered across the program, organized by category. Cost indicators reflect typical individual or small-team pricing.</p>
+
+    <div class="tools-section-header">AI Platforms</div>
+    <div class="tools-grid">
+      <div class="tool-card"><div class="tool-name">Claude Code</div><div class="tool-desc">Anthropic's command-line AI agent platform — the primary tool taught in this program.</div><span class="tool-cost cost-paid">Paid (usage-based)</span></div>
+      <div class="tool-card"><div class="tool-name">Claude Cowork</div><div class="tool-desc">Anthropic's desktop app. Scheduled tasks, visual artifacts, connector-based MCP setup.</div><span class="tool-cost cost-paid">Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Microsoft Copilot</div><div class="tool-desc">AI embedded across Microsoft 365 — Word, Excel, Outlook, Teams. Key enterprise entry point.</div><span class="tool-cost cost-paid">Paid (M365 add-on)</span></div>
+      <div class="tool-card"><div class="tool-name">ChatGPT / OpenAI</div><div class="tool-desc">Conversational AI; useful for PRD drafting and comparing outputs.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Google Gemini</div><div class="tool-desc">Google's AI, natively integrated with Google Workspace.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Perplexity</div><div class="tool-desc">AI-powered research and real-time web search. Better than Google for nuanced questions.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
+    </div>
+
+    <div class="tools-section-header">Productivity &amp; Automation</div>
+    <div class="tools-grid">
+      <div class="tool-card"><div class="tool-name">Microsoft 365</div><div class="tool-desc">Outlook, Teams, SharePoint, Excel — the primary enterprise suite. Most integrations built around this.</div><span class="tool-cost cost-paid">Paid (enterprise)</span></div>
+      <div class="tool-card"><div class="tool-name">Google Workspace</div><div class="tool-desc">Gmail, Calendar, Drive, Docs — many Claude MCP integrations are built for Google first.</div><span class="tool-cost cost-paid">Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Notion</div><div class="tool-desc">Relational databases, agent memory, project management. Used in the Capstone CRM build.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Obsidian</div><div class="tool-desc">Local markdown notes with knowledge graph. Build a personal Wikipedia ("Claudeopedia") that's portable to any AI system.</div><span class="tool-cost cost-free">Free</span></div>
+      <div class="tool-card"><div class="tool-name">GitHub</div><div class="tool-desc">Version control for skills, agent files, and code. How you sync across devices and share with teams.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Slack</div><div class="tool-desc">Messaging platform; used as the delivery layer for AI-generated reports and briefings.</div><span class="tool-cost cost-paid">Paid</span></div>
+    </div>
+
+    <div class="tools-section-header">Build &amp; Deploy</div>
+    <div class="tools-grid">
+      <div class="tool-card"><div class="tool-name">Lovable</div><div class="tool-desc">Design-first no-code web app builder. Great for building polished frontends fast.</div><span class="tool-cost cost-freemium">Freemium</span></div>
+      <div class="tool-card"><div class="tool-name">Replit</div><div class="tool-desc">Web-based development environment. Build and host apps without local setup.</div><span class="tool-cost cost-freemium">Freemium</span></div>
+      <div class="tool-card"><div class="tool-name">Vercel</div><div class="tool-desc">Hosting and auto-deployment. GitHub push → live site in seconds. Manages production secrets.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Google AI Studio</div><div class="tool-desc">Prototyping with Google's Gemini models. Good for password-protected sharing with small groups.</div><span class="tool-cost cost-free">Free</span></div>
+      <div class="tool-card"><div class="tool-name">VS Code</div><div class="tool-desc">Code editor with Claude Code integration. See file changes in real time as agents work.</div><span class="tool-cost cost-free">Free</span></div>
+    </div>
+
+    <div class="tools-section-header">Voice Dictation</div>
+    <div class="tools-grid">
+      <div class="tool-card"><div class="tool-name">Wispr Flow</div><div class="tool-desc">AI voice dictation. Hold function key, speak, release. 4× faster than typing. Used 50–150× daily by power users. Works everywhere on your computer.</div><span class="tool-cost cost-paid">~$15/month</span></div>
+    </div>
+
+    <div class="tools-section-header">Payments</div>
+    <div class="tools-grid">
+      <div class="tool-card"><div class="tool-name">Stripe</div><div class="tool-desc">Subscription billing for paid apps. Test mode before going live. Webhooks confirm payment status.</div><span class="tool-cost cost-freemium">Free to start, % per transaction</span></div>
+      <div class="tool-card"><div class="tool-name">Google SSO</div><div class="tool-desc">User authentication via Google accounts. Easiest login system to implement for web apps.</div><span class="tool-cost cost-free">Free</span></div>
+    </div>
+
+    <div class="tools-section-header">Private &amp; Secure AI</div>
+    <div class="tools-grid">
+      <div class="tool-card"><div class="tool-name">LM Studio</div><div class="tool-desc">Run AI models locally — no data leaves your device. Best option for working with sensitive content. No internet required.</div><span class="tool-cost cost-free">Free</span></div>
+      <div class="tool-card"><div class="tool-name">AWS Bedrock</div><div class="tool-desc">Run Claude on AWS infrastructure. Data stays within your AWS environment, never sent to Anthropic.</div><span class="tool-cost cost-paid">Paid (enterprise)</span></div>
+      <div class="tool-card"><div class="tool-name">Google Vertex</div><div class="tool-desc">Run Claude on Google Cloud. Same data sovereignty benefit as Bedrock, different cloud provider.</div><span class="tool-cost cost-paid">Paid (enterprise)</span></div>
+    </div>
+
+    <div class="cost-summary">
+      <h4>Cost to Get Started</h4>
+      <ul>
+        <li>Claude Code / Claude Pro: ~$20–40/month depending on usage level</li>
+        <li>Wispr Flow: ~$15/month — optional but high-value for anyone typing a lot</li>
+        <li>GitHub + Vercel: free tier is more than sufficient to start</li>
+        <li>Most of the build and deploy stack starts free — you only pay as you scale</li>
+        <li>Microsoft Copilot: requires an M365 Copilot license (check with IT for enterprise availability)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- TRAINING -->
+<section id="training" style="background: var(--light-bg)">
+  <div class="inner">
+    <p class="section-label">Implications for Training</p>
+    <h2>A Framework for Enterprise AI Adoption</h2>
+    <p class="section-intro">This is my recommendation — based on what I experienced firsthand in this program and what I know about how our people actually learn. I'm not pitching AI for its own sake. I'm sharing what I believe would genuinely move the needle if we approached training the way this program did. Microsoft 365 environment, non-technical audience — that's the lens.</p>
+
+    <div class="training-step">
+      <div class="training-step-header">
+        <div class="step-num">1</div>
+        <h3>Get Leadership Buy-In — Starting with a Live Demo</h3>
+      </div>
+      <div class="training-step-body">
+        <p>Don't pitch AI with slides. Show it working on something real, in real time, in the room.</p>
+        <p>I have seen this work in the room. People who walked in skeptical walked out asking when they could start. The trick is to show it — not explain it.</p>
+        <p><strong>What to demo:</strong></p>
+        <ul>
+          <li>An AI agent completing an end-to-end task — researching a topic, drafting a document, summarizing a meeting, organizing a to-do list — without being micromanaged step by step</li>
+          <li>Microsoft Copilot embedded in Outlook or Teams — familiar environment, immediate relevance</li>
+          <li>A "what would disappear from your plate?" moment: ask each leader directly, then show Claude handling a version of it live</li>
+        </ul>
+        <p><strong>Key framing for leadership:</strong></p>
+        <ul>
+          <li>This is not a chatbot. It's a system that operates on your behalf, even when you're not watching.</li>
+          <li>The competitive advantage isn't the AI model itself — it's the speed of iteration of the team using it.</li>
+          <li>Teams of 5 with AI infrastructure are already outcompeting teams of 50 without it. This is the window.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="training-step">
+      <div class="training-step-header">
+        <div class="step-num">2</div>
+        <h3>Train the First Cohort: Directors &amp; Managers</h3>
+      </div>
+      <div class="training-step-body">
+        <p><strong>Why start here:</strong> Directors and managers have enough organizational context to identify high-value use cases. They set the tone for their teams. Their wins become the case studies that drive the next cohort. Bottom-up adoption is slower and harder to sustain.</p>
+
+        <p><strong>Training structure (modeled on this mastermind program):</strong></p>
+        <ul>
+          <li><strong>Biweekly formal sessions</strong> — 60–90 minutes, cohort-based, hands-on. Each session ends with a concrete deliverable to build before the next one.</li>
+          <li><strong>Office hours on alternating weeks</strong> — drop-in, no agenda. Participants bring what broke, what they built, what they're stuck on.</li>
+        </ul>
+
+        <p><strong>Suggested Microsoft Teams community infrastructure:</strong></p>
+        <div class="teams-channels">
+          <div class="channel-card">
+            <div class="channel-name">#announcements</div>
+            <div class="channel-desc">Session schedule, recordings, updates. Admin-only posts.</div>
+          </div>
+          <div class="channel-card">
+            <div class="channel-name">#ask-the-community</div>
+            <div class="channel-desc">Peer-to-peer questions. "How did you get Claude to…?" Anyone can answer.</div>
+          </div>
+          <div class="channel-card">
+            <div class="channel-name">#show-and-tell</div>
+            <div class="channel-desc">Share what you built, what's working, what surprised you. Builds culture.</div>
+          </div>
+          <div class="channel-card">
+            <div class="channel-name">#admin-support</div>
+            <div class="channel-desc">Technical help, account issues, permission problems. Staffed by training leads.</div>
+          </div>
+        </div>
+
+        <p><strong>Suggested session arc (5 sessions + office hours):</strong></p>
+        <ul class="session-arc">
+          <li>What is Claude? Live demo + writing your first CLAUDE.md</li>
+          <li>Building context documents and your first automated skill</li>
+          <li>Scheduling: running tasks overnight without being present</li>
+          <li>Building workflows that connect your existing tools</li>
+          <li>Introduction to multi-agent thinking: when one agent isn't enough</li>
+        </ul>
+        <p style="margin-top:12px; font-size:0.85rem; color:#666;">Office hours run between each session. The program is designed to be iterative — assess after each session, adjust before the next.</p>
+
+        <p><strong>Iterative by design:</strong></p>
+        <ul>
+          <li>Expect version 1 of everything to be imperfect. That's not a failure — that's the process.</li>
+          <li>Build "bragging about how bad v1 was" into the culture. Progress is the metric, not polish.</li>
+          <li>Review after every two sessions: what's working? What isn't? What do participants actually need next?</li>
+        </ul>
+
+        <div class="questions-box">
+          <h4>Outstanding Questions Before Launch</h4>
+          <ul>
+            <li>How large should the first cohort be? (Recommended: 10–15 for high engagement and accountability)</li>
+            <li>Who leads the training? Internal champion vs. external facilitator vs. hybrid?</li>
+            <li>What does success look like at 30, 60, and 90 days?</li>
+            <li>How does this integrate with existing L&amp;D programs and compliance requirements?</li>
+            <li>What data handling guidelines apply to Claude usage in this environment?</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SCREENSHOTS -->
+<section id="screenshots">
+  <div class="inner">
+    <p class="section-label">Screenshot Gallery</p>
+    <h2>Visual Documentation</h2>
+    <p class="section-intro">Click any name to view the full screenshot. Grouped by what's in them, not by session.</p>
+
+    <div class="screenshot-group">
+      <h3>Claude Code Setup</h3>
+      <div class="screenshot-list">
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-09%20at%209.31.10%20PM.png', 'Getting Fully Operational — official program session card')">Getting Fully Operational</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-15%20at%2010.15.27%20AM.png', 'Common Install Issues — troubleshooting guide for Claude Code errors')">Common Install Issues</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-23%20at%2010.09.01%20AM.png', 'Claude Code File System Diagram — ~/.claude/ folder structure')">Claude Code File System Diagram</span>
+      </div>
+    </div>
+
+    <div class="screenshot-group">
+      <h3>CLAUDE.md &amp; Configuration</h3>
+      <div class="screenshot-list">
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%205.08.32%20PM.png', 'Chief of Staff Mindset — system prompt showing CoS thinking framework')">Chief of Staff Mindset</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%209.10.57%20PM.png', 'CLAUDE.md Table of Contents — 8 sections including Core Mindset, Planning, MCP Tools, Memory')">CLAUDE.md Table of Contents</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%209.13.56%20PM.png', 'MCP Tools Configuration — Google Workspace, Slack, Chrome MCPs always available')">MCP Tools Configuration</span>
+      </div>
+    </div>
+
+    <div class="screenshot-group">
+      <h3>Custom Skills</h3>
+      <div class="screenshot-list">
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%204.56.25%20PM.png', 'Screenshots Skill in VS Code — ss.md skill being built in Cursor IDE with video')">Screenshots Skill in VS Code</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%204.57.56%20PM.png', 'Screenshots Skill in Terminal — same ss.md skill in dark terminal view')">Screenshots Skill in Terminal</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%204.58.00%20PM.png', 'Ramble-to-PPT Skill — SKILL.md converting rough brain dumps into polished presentations')">Ramble-to-PPT Skill</span>
+      </div>
+    </div>
+
+    <div class="screenshot-group">
+      <h3>Scheduling &amp; Automation</h3>
+      <div class="screenshot-list">
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%208.15.06%20PM.png', 'Scheduling Options Comparison — /schedule vs. cron vs. CronCreate vs. /loop table')">Scheduling Options Comparison</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%208.16.57%20PM.png', 'When to Use /schedule vs. Cron — plain-language decision guide')">When to Use /schedule vs. Cron</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.20.26%20PM.png', 'Google Apps Script Code — sendMorningBriefingDraft() function')">Google Apps Script Code</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.21.38%20PM.png', 'Google Apps Script Setup — 6-step guide to schedule morning briefing auto-send')">Google Apps Script Setup Guide</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-05-03%20at%2012.28.07%20PM.png', 'Schedule an Email Draft Into Your Inbox — Apps Script walkthrough from session slides')">Schedule an Email Draft Into Your Inbox</span>
+      </div>
+    </div>
+
+    <div class="screenshot-group">
+      <h3>Morning Briefing</h3>
+      <div class="screenshot-list">
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.15.13%20PM.png', 'First Claude Prompt: Morning Briefing — the actual plain-language request typed to start building')">First Claude Prompt: Morning Briefing</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.13.08%20PM.png', 'Progressive Builder: 10+ Iterations — slide showing 11 feature additions over time')">Progressive Builder: 10+ Iterations</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.01.58%20PM.png', 'Morning Briefing: Energy & Weather — survival mode rating + weather + day summary')">Morning Briefing: Energy &amp; Weather</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.02.56%20PM.png', 'Morning Briefing: Today\'s Schedule — color-coded calendar with event details and locations')">Morning Briefing: Today's Schedule</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.04.28%20PM.png', 'Morning Briefing: This Week\'s Goals — goal-aligned daily context with "Use AI to become more of the person you want to be"')">Morning Briefing: This Week's Goals</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.04.52%20PM.png', 'Morning Briefing: Let Claude Handle It — email keyword routing system (DRAFT, PREP, IPREP, MMPREP)')">Morning Briefing: Let Claude Handle It</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.06.12%20PM.png', 'Morning Briefing: Your City This Week — local events + motivational quote from Luis Buñuel')">Morning Briefing: Your City This Week</span>
+      </div>
+    </div>
+
+    <div class="screenshot-group">
+      <h3>Agent Architecture</h3>
+      <div class="screenshot-list">
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%207.51.43%20PM.png', 'AI Agents: The Flow Whiteboard — hand-drawn sketch showing trigger/output flow with time, context, files, real-time access')">AI Agents: The Flow Whiteboard</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%207.52.04%20PM.png', 'AI Agents: The Flow (Close-up) — same whiteboard diagram, tighter crop')">AI Agents: The Flow (Close-up)</span>
+      </div>
+    </div>
+
+    <div class="screenshot-group">
+      <h3>Session Frameworks</h3>
+      <div class="screenshot-list">
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-23%20at%2010.25.14%20AM.png', 'Projects: Find Your Goldilocks — too big / too small / just right comparison table for scoping projects')">Projects: Find Your Goldilocks</span>
+        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-30%20at%2010.36.14%20AM.png', 'NoteQuest: Built and Iterated in Claude Code — app testimonial and deployment story from Session 3')">NoteQuest: Built and Iterated in Claude Code</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  AI Agent Mastermind &nbsp;·&nbsp; Clare Mestre, Implementation Director &nbsp;·&nbsp; May 2026
+</footer>
+
+<script>
+// PROGRESS BAR
+window.addEventListener('scroll', () => {
+  const scrollTop = document.documentElement.scrollTop;
+  const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  document.getElementById('progress-bar').style.width = (scrollTop / scrollHeight * 100) + '%';
+});
+
+// NAV ACTIVE STATE
+const sections = document.querySelectorAll('section[id], #hero');
+const navLinks = document.querySelectorAll('.nav-links a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// SESSION ACCORDION
+function toggleSession(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.session-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// FRAMEWORK CARDS
+function toggleFramework(header) {
+  const card = header.closest('.framework-card');
+  const body = card.querySelector('.framework-body');
+  const btn = card.querySelector('.framework-expand-btn');
+  body.classList.toggle('open');
+  btn.textContent = body.classList.contains('open') ? 'Show less ▴' : 'Read more ▾';
+}
+
+// SKILL ACCORDION
+function toggleSkill(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.skill-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// LIGHTBOX
+function openLightbox(src, caption) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox-caption').textContent = caption;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(e) {
+  if (!e || e.target === document.getElementById('lightbox') || e.target === document.getElementById('lightbox-close')) {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightbox-img').src = '';
+    document.body.style.overflow = '';
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+</body>
+</html>
