@@ -398,10 +398,156 @@ footer {
   #hero { padding: 48px 24px; }
   #hero h1 { font-size: 1.9rem; }
   nav { padding: 0 16px; }
-  .nav-links a { font-size: 0.72rem; padding: 5px 7px; }
+  .nav-links { display: none; }
+  .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 52px; left: 0; right: 0; background: #005070; padding: 8px 0; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .nav-links.open a { padding: 10px 20px; border-radius: 0; font-size: 0.9rem; }
+  .hamburger { display: flex; }
   .two-col { grid-template-columns: 1fr; }
   .arc-row { gap: 4px; }
   .arc-step { clip-path: none !important; border-radius: 4px; }
+  .cos-historian-row { flex-direction: column; align-items: center; }
+  .historian-arm { flex-direction: column; align-items: center; margin-top: 0; }
+  .historian-hline { width: 2px; height: 20px; }
+}
+
+/* HAMBURGER */
+.hamburger {
+  display: none; background: none; border: none; cursor: pointer;
+  flex-direction: column; gap: 5px; padding: 6px;
+}
+.hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; transition: all 0.2s; }
+
+/* BACK TO TOP */
+#back-to-top {
+  position: fixed; bottom: 28px; right: 28px; z-index: 999;
+  background: var(--grad-hero); color: white;
+  border: none; border-radius: 50%; width: 44px; height: 44px;
+  cursor: pointer; font-size: 1.1rem;
+  box-shadow: 0 3px 12px rgba(0,97,131,0.35);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+#back-to-top.visible { opacity: 1; pointer-events: auto; }
+#back-to-top:hover { transform: translateY(-3px); }
+
+/* READING TIME */
+.reading-time {
+  font-size: 0.82rem; color: rgba(255,255,255,0.55);
+  margin-top: 10px; letter-spacing: 0.03em;
+}
+
+/* TL;DR CARD */
+#tldr {
+  background: var(--slate); padding: 48px;
+}
+.tldr-card {
+  max-width: 800px; margin: 0 auto;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-left: 5px solid var(--gold);
+  border-radius: 8px; padding: 28px 32px;
+}
+.tldr-label {
+  font-size: 0.72rem; font-weight: bold; letter-spacing: 0.12em;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 10px;
+}
+.tldr-card h3 { color: white; font-size: 1.1rem; margin-bottom: 16px; }
+.tldr-card ul { padding-left: 0; list-style: none; }
+.tldr-card li {
+  font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.65;
+  padding: 8px 0 8px 22px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  position: relative;
+}
+.tldr-card li:last-child { border-bottom: none; }
+.tldr-card li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-weight: bold; }
+
+/* SCROLL ANIMATIONS */
+[data-animate] {
+  opacity: 0; transform: translateY(22px);
+  transition: opacity 0.6s cubic-bezier(0.25,0.46,0.45,0.94), transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+[data-animate].in { opacity: 1; transform: translateY(0); }
+[data-animate-delay="1"] { transition-delay: 0.1s; }
+[data-animate-delay="2"] { transition-delay: 0.2s; }
+[data-animate-delay="3"] { transition-delay: 0.3s; }
+
+/* COPY BUTTON */
+.framework-copy-btn {
+  position: absolute; top: 14px; right: 14px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 4px; padding: 3px 8px;
+  font-size: 0.7rem; color: #999; cursor: pointer;
+  font-family: Arial, sans-serif; transition: all 0.15s;
+}
+.framework-copy-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+.framework-copy-btn.copied { border-color: var(--green); color: var(--green); }
+.framework-header { position: relative; }
+
+/* AI READINESS ASSESSMENT */
+#assessment { background: white; }
+.assessment-card {
+  max-width: 720px; margin: 0 auto;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 12px; padding: 36px 40px;
+  box-shadow: 0 4px 24px rgba(0,97,131,0.1);
+}
+.assessment-card h3 { font-size: 1.3rem; color: var(--slate); margin-bottom: 6px; }
+.assessment-card .sub { font-size: 0.88rem; color: #666; margin-bottom: 28px; line-height: 1.5; }
+.assessment-progress {
+  height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 28px; overflow: hidden;
+}
+.assessment-progress-fill {
+  height: 100%; background: var(--grad-rainbow); border-radius: 2px;
+  transition: width 0.4s ease; width: 0%;
+}
+.question-block { display: none; }
+.question-block.active { display: block; }
+.question-num { font-size: 0.72rem; color: var(--teal); font-weight: bold; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+.question-text { font-size: 1rem; font-weight: bold; color: var(--slate); margin-bottom: 16px; line-height: 1.5; }
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.option-label {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border: 1px solid var(--border); border-radius: 6px;
+  cursor: pointer; transition: all 0.15s; font-size: 0.9rem; color: var(--slate);
+}
+.option-label:hover { border-color: var(--teal); background: var(--teal-light); }
+.option-label input { accent-color: var(--teal); width: 16px; height: 16px; flex-shrink: 0; }
+.option-label.selected { border-color: var(--teal); background: var(--teal-light); }
+.assessment-next-btn, .assessment-submit-btn {
+  background: var(--grad-hero); color: white;
+  border: none; border-radius: 6px; padding: 11px 28px;
+  font-size: 0.9rem; font-weight: bold; cursor: pointer;
+  font-family: Arial, sans-serif; transition: opacity 0.2s;
+  opacity: 0.4; pointer-events: none;
+}
+.assessment-next-btn.enabled, .assessment-submit-btn.enabled { opacity: 1; pointer-events: auto; }
+.assessment-result { display: none; text-align: center; padding: 8px 0; }
+.assessment-result.show { display: block; }
+.result-tier {
+  font-size: 1.6rem; font-weight: bold; margin-bottom: 8px;
+  background: var(--grad-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.result-desc { font-size: 0.95rem; color: #444; line-height: 1.65; margin-bottom: 16px; max-width: 480px; margin-left: auto; margin-right: auto; }
+.result-next { font-size: 0.88rem; color: var(--teal); background: var(--teal-light); border-radius: 6px; padding: 12px 16px; line-height: 1.6; }
+.assessment-retake { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 8px 20px; color: #666; font-size: 0.82rem; cursor: pointer; margin-top: 14px; font-family: Arial, sans-serif; }
+.assessment-retake:hover { border-color: var(--teal); color: var(--teal); }
+
+/* PRINT STYLES */
+@media print {
+  #progress-bar, nav, #back-to-top, .framework-expand-btn, .framework-copy-btn,
+  .session-arrow, .skill-arrow, #lightbox, #assessment, .assessment-card { display: none !important; }
+  body { font-size: 12pt; color: black; background: white; }
+  section { padding: 24px 32px; background: white !important; page-break-inside: avoid; }
+  #hero { background: #455361 !important; color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #workforce { background: #455361 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .session-body, .framework-body, .skill-body { display: block !important; }
+  h2 { color: #006183 !important; font-size: 16pt; }
+  .framework-card, .skill-card, .session-card { page-break-inside: avoid; border: 1px solid #ddd !important; margin-bottom: 12pt; }
+  #overview, #journey, #frameworks, #workforce, #skills, #tools, #training { page-break-before: always; }
+  #hero { page-break-before: avoid; }
+  footer::after { content: " — AI Agent Mastermind · Clare Mestre · May 2026"; }
+  a { color: inherit; text-decoration: none; }
 }
 </style>
 </head>
@@ -419,16 +565,19 @@ footer {
 <!-- NAV -->
 <nav>
   <span class="nav-brand">AI Agent Mastermind</span>
-  <div class="nav-links">
-    <a href="#overview">Overview</a>
-    <a href="#journey">Journey</a>
-    <a href="#frameworks">Frameworks</a>
-    <a href="#workforce">Workforce</a>
-    <a href="#skills">Skills</a>
-    <a href="#tools">Tools</a>
-    <a href="#training">Training</a>
-    <a href="#screenshots">Screenshots</a>
+  <div class="nav-links" id="nav-links">
+    <a href="#overview" onclick="closeNav()">Overview</a>
+    <a href="#journey" onclick="closeNav()">Journey</a>
+    <a href="#frameworks" onclick="closeNav()">Frameworks</a>
+    <a href="#workforce" onclick="closeNav()">Workforce</a>
+    <a href="#skills" onclick="closeNav()">Skills</a>
+    <a href="#tools" onclick="closeNav()">Tools</a>
+    <a href="#training" onclick="closeNav()">Training</a>
+    <a href="#screenshots" onclick="closeNav()">Screenshots</a>
   </div>
+  <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <!-- HERO -->
@@ -438,11 +587,27 @@ footer {
     <p class="subhead">Prepared for Nick Thor, VP of AI &amp; Emerging Technology</p>
     <p class="credit">Clare Mestre, Implementation Director &nbsp;·&nbsp; May 2026</p>
     <div class="chips">
-      <span class="chip">9 Sessions</span>
-      <span class="chip">6 Core Frameworks</span>
-      <span class="chip">33+ Hours of Training</span>
+      <span class="chip"><span class="counter" data-target="9">9</span> Sessions</span>
+      <span class="chip"><span class="counter" data-target="6">6</span> Core Frameworks</span>
+      <span class="chip"><span class="counter" data-target="33">33</span>+ Hours of Training</span>
     </div>
     <p style="margin-top: 28px; font-size: 1rem; color: rgba(255,255,255,0.75); max-width: 580px; margin-left: auto; margin-right: auto; line-height: 1.65;">Using AI to do more of what matters — smarter daily work, bigger impact, and systems that keep running while you focus on what only you can do.</p>
+    <p class="reading-time" id="reading-time">Calculating read time...</p>
+  </div>
+</section>
+
+<!-- TL;DR -->
+<section id="tldr">
+  <div class="tldr-card" data-animate>
+    <div class="tldr-label">If you only have 5 minutes</div>
+    <h3>The five things that matter most</h3>
+    <ul>
+      <li>AI agents aren't chatbots — they're systems that run, connect your tools, and keep improving over time without you managing every step.</li>
+      <li>Non-technical professionals can build production-grade workflows in 4–6 weeks when training is hands-on and cohort-based.</li>
+      <li>The most advanced concept — the Digital Workforce — mirrors how high-performing human teams are structured: a Chief of Staff who handles delegation, Directors who own lanes, and a Historian who captures everything.</li>
+      <li>The three-question test for any AI investment: does it <strong>Connect</strong> multiple tools? Does it <strong>Continue</strong> without you? Does it <strong>Compound</strong> over time?</li>
+      <li>Recommended training rollout: live leadership demo first → cohort of directors and managers → biweekly sessions + office hours + a Teams community for peer learning.</li>
+    </ul>
   </div>
 </section>
 
@@ -819,6 +984,7 @@ footer {
 
       <div class="framework-card">
         <div class="framework-header" onclick="toggleFramework(this)">
+          <button class="framework-copy-btn" onclick="copyFramework(event,this)" title="Copy framework">Copy</button>
           <div class="framework-num">FRAMEWORK 01</div>
           <div class="framework-title">Build Your Foundation</div>
           <div class="framework-teaser">The three pieces every AI system needs before anything else works.</div>
@@ -1160,12 +1326,13 @@ footer {
     <p class="section-label">Tools &amp; Ecosystem</p>
     <h2>The Full Stack</h2>
     <p class="section-intro">Every tool covered across the program, organized by category. Cost indicators reflect typical individual or small-team pricing.</p>
+    <p style="font-size:0.82rem; color:#666; margin-bottom:4px; margin-top:-20px;">🌸 Tools Clare is actively using today</p>
 
     <div class="tools-section-header">AI Platforms</div>
     <div class="tools-grid">
-      <div class="tool-card"><div class="tool-name">Claude Code</div><div class="tool-desc">Anthropic's command-line AI agent platform — the primary tool taught in this program.</div><span class="tool-cost cost-paid">Paid (usage-based)</span></div>
-      <div class="tool-card"><div class="tool-name">Claude Cowork</div><div class="tool-desc">Anthropic's desktop app. Scheduled tasks, visual artifacts, connector-based MCP setup.</div><span class="tool-cost cost-paid">Paid</span></div>
-      <div class="tool-card"><div class="tool-name">Microsoft Copilot</div><div class="tool-desc">AI embedded across Microsoft 365 — Word, Excel, Outlook, Teams. Key enterprise entry point.</div><span class="tool-cost cost-paid">Paid (M365 add-on)</span></div>
+      <div class="tool-card"><div class="tool-name">Claude Code 🌸</div><div class="tool-desc">Anthropic's command-line AI agent platform — the primary tool taught in this program.</div><span class="tool-cost cost-paid">Paid (usage-based)</span></div>
+      <div class="tool-card"><div class="tool-name">Claude Cowork 🌸</div><div class="tool-desc">Anthropic's desktop app. Scheduled tasks, visual artifacts, connector-based MCP setup.</div><span class="tool-cost cost-paid">Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Microsoft Copilot 🌸</div><div class="tool-desc">AI embedded across Microsoft 365 — Word, Excel, Outlook, Teams. Key enterprise entry point.</div><span class="tool-cost cost-paid">Paid (M365 add-on)</span></div>
       <div class="tool-card"><div class="tool-name">ChatGPT / OpenAI</div><div class="tool-desc">Conversational AI; useful for PRD drafting and comparing outputs.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
       <div class="tool-card"><div class="tool-name">Google Gemini</div><div class="tool-desc">Google's AI, natively integrated with Google Workspace.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
       <div class="tool-card"><div class="tool-name">Perplexity</div><div class="tool-desc">AI-powered research and real-time web search. Better than Google for nuanced questions.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
@@ -1173,26 +1340,25 @@ footer {
 
     <div class="tools-section-header">Productivity &amp; Automation</div>
     <div class="tools-grid">
-      <div class="tool-card"><div class="tool-name">Microsoft 365</div><div class="tool-desc">Outlook, Teams, SharePoint, Excel — the primary enterprise suite. Most integrations built around this.</div><span class="tool-cost cost-paid">Paid (enterprise)</span></div>
+      <div class="tool-card"><div class="tool-name">Microsoft 365 🌸</div><div class="tool-desc">Outlook, Teams, SharePoint, Excel — the primary enterprise suite. Most integrations built around this.</div><span class="tool-cost cost-paid">Paid (enterprise)</span></div>
       <div class="tool-card"><div class="tool-name">Google Workspace</div><div class="tool-desc">Gmail, Calendar, Drive, Docs — many Claude MCP integrations are built for Google first.</div><span class="tool-cost cost-paid">Paid</span></div>
-      <div class="tool-card"><div class="tool-name">Notion</div><div class="tool-desc">Relational databases, agent memory, project management. Used in the Capstone CRM build.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Notion 🌸</div><div class="tool-desc">Relational databases, agent memory, project management. Used in the Capstone CRM build.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
       <div class="tool-card"><div class="tool-name">Obsidian</div><div class="tool-desc">Local markdown notes with knowledge graph. Build a personal Wikipedia ("Claudeopedia") that's portable to any AI system.</div><span class="tool-cost cost-free">Free</span></div>
-      <div class="tool-card"><div class="tool-name">GitHub</div><div class="tool-desc">Version control for skills, agent files, and code. How you sync across devices and share with teams.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
-      <div class="tool-card"><div class="tool-name">Slack</div><div class="tool-desc">Messaging platform; used as the delivery layer for AI-generated reports and briefings.</div><span class="tool-cost cost-paid">Paid</span></div>
+      <div class="tool-card"><div class="tool-name">GitHub 🌸</div><div class="tool-desc">Version control for skills, agent files, and code. How you sync across devices and share with teams.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
     </div>
 
     <div class="tools-section-header">Build &amp; Deploy</div>
     <div class="tools-grid">
       <div class="tool-card"><div class="tool-name">Lovable</div><div class="tool-desc">Design-first no-code web app builder. Great for building polished frontends fast.</div><span class="tool-cost cost-freemium">Freemium</span></div>
       <div class="tool-card"><div class="tool-name">Replit</div><div class="tool-desc">Web-based development environment. Build and host apps without local setup.</div><span class="tool-cost cost-freemium">Freemium</span></div>
-      <div class="tool-card"><div class="tool-name">Vercel</div><div class="tool-desc">Hosting and auto-deployment. GitHub push → live site in seconds. Manages production secrets.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
+      <div class="tool-card"><div class="tool-name">Vercel 🌸</div><div class="tool-desc">Hosting and auto-deployment. GitHub push → live site in seconds. Manages production secrets.</div><span class="tool-cost cost-freemium">Free / Paid</span></div>
       <div class="tool-card"><div class="tool-name">Google AI Studio</div><div class="tool-desc">Prototyping with Google's Gemini models. Good for password-protected sharing with small groups.</div><span class="tool-cost cost-free">Free</span></div>
-      <div class="tool-card"><div class="tool-name">VS Code</div><div class="tool-desc">Code editor with Claude Code integration. See file changes in real time as agents work.</div><span class="tool-cost cost-free">Free</span></div>
+      <div class="tool-card"><div class="tool-name">VS Code 🌸</div><div class="tool-desc">Code editor with Claude Code integration. See file changes in real time as agents work.</div><span class="tool-cost cost-free">Free</span></div>
     </div>
 
     <div class="tools-section-header">Voice Dictation</div>
     <div class="tools-grid">
-      <div class="tool-card"><div class="tool-name">Wispr Flow</div><div class="tool-desc">AI voice dictation. Hold function key, speak, release. 4× faster than typing. Used 50–150× daily by power users. Works everywhere on your computer.</div><span class="tool-cost cost-paid">~$15/month</span></div>
+      <div class="tool-card"><div class="tool-name">Wispr Flow 🌸</div><div class="tool-desc">AI voice dictation. Hold function key, speak, release. 4× faster than typing. Used 50–150× daily by power users. Works everywhere on your computer.</div><span class="tool-cost cost-paid">~$15/month</span></div>
     </div>
 
     <div class="tools-section-header">Payments</div>
@@ -1226,7 +1392,7 @@ footer {
   <div class="inner">
     <p class="section-label">Implications for Training</p>
     <h2>A Framework for Enterprise AI Adoption</h2>
-    <p class="section-intro">This is my recommendation — based on what I experienced firsthand in this program and what I know about how people actually learn. I'm not pitching AI for its own sake. I'm sharing what I believe would genuinely move the needle if we approached training the way this program did. Microsoft 365 environment, non-technical audience — that's the lens.</p>
+    <p class="section-intro">This is my recommendation, based on my experience with this program. I'm sharing what I believe would genuinely move the needle at the company — for a Microsoft 365 environment with a non-technical audience.</p>
 
     <div class="training-step">
       <div class="training-step-header">
@@ -1318,6 +1484,87 @@ footer {
   </div>
 </section>
 
+<!-- AI READINESS ASSESSMENT -->
+<section id="assessment">
+  <div class="inner">
+    <p class="section-label">Interactive</p>
+    <h2>How AI-Ready Is Your Team?</h2>
+    <p class="section-intro" style="margin-bottom:28px">Five questions. Two minutes. A read on where you are — and what to focus on next.</p>
+    <div class="assessment-card" data-animate>
+      <div class="assessment-progress"><div class="assessment-progress-fill" id="quiz-progress"></div></div>
+
+      <!-- Q1 -->
+      <div class="question-block active" data-q="1">
+        <div class="question-num">Question 1 of 5</div>
+        <div class="question-text">How does your team currently use AI?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q1" value="0"> We haven't started yet or use it very rarely</label>
+          <label class="option-label"><input type="radio" name="q1" value="1"> We use it for one-off questions and drafting help</label>
+          <label class="option-label"><input type="radio" name="q1" value="2"> We have ongoing workflows and daily habits built around it</label>
+        </div>
+        <button class="assessment-next-btn" id="next-1" onclick="nextQuestion(1)">Next →</button>
+      </div>
+
+      <!-- Q2 -->
+      <div class="question-block" data-q="2">
+        <div class="question-num">Question 2 of 5</div>
+        <div class="question-text">When someone on your team opens Claude, does it already know their role, goals, and context?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q2" value="0"> No — they explain it fresh every session</label>
+          <label class="option-label"><input type="radio" name="q2" value="1"> Sometimes — they paste in context manually</label>
+          <label class="option-label"><input type="radio" name="q2" value="2"> Yes — context documents and a CLAUDE.md are set up</label>
+        </div>
+        <button class="assessment-next-btn" id="next-2" onclick="nextQuestion(2)">Next →</button>
+      </div>
+
+      <!-- Q3 -->
+      <div class="question-block" data-q="3">
+        <div class="question-num">Question 3 of 5</div>
+        <div class="question-text">Do any of your AI workflows run automatically — without someone manually triggering them?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q3" value="0"> No — everything requires a human to start it</label>
+          <label class="option-label"><input type="radio" name="q3" value="1"> We've experimented with scheduling, but it's not reliable yet</label>
+          <label class="option-label"><input type="radio" name="q3" value="2"> Yes — we have scheduled workflows that run on their own</label>
+        </div>
+        <button class="assessment-next-btn" id="next-3" onclick="nextQuestion(3)">Next →</button>
+      </div>
+
+      <!-- Q4 -->
+      <div class="question-block" data-q="4">
+        <div class="question-num">Question 4 of 5</div>
+        <div class="question-text">Do your AI tools connect to multiple systems — email, calendar, documents, data?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q4" value="0"> No — we only use the chat interface</label>
+          <label class="option-label"><input type="radio" name="q4" value="1"> We've connected one or two tools</label>
+          <label class="option-label"><input type="radio" name="q4" value="2"> Yes — Claude connects across multiple tools and data sources</label>
+        </div>
+        <button class="assessment-next-btn" id="next-4" onclick="nextQuestion(4)">Next →</button>
+      </div>
+
+      <!-- Q5 -->
+      <div class="question-block" data-q="5">
+        <div class="question-num">Question 5 of 5</div>
+        <div class="question-text">Does your organization have a structured plan for rolling out AI training to directors and managers?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q5" value="0"> Not yet — no formal plan exists</label>
+          <label class="option-label"><input type="radio" name="q5" value="1"> It's been discussed but not structured yet</label>
+          <label class="option-label"><input type="radio" name="q5" value="2"> Yes — a rollout plan is in progress or underway</label>
+        </div>
+        <button class="assessment-submit-btn" id="submit-quiz" onclick="submitQuiz()">See My Results →</button>
+      </div>
+
+      <!-- RESULT -->
+      <div class="assessment-result" id="quiz-result">
+        <div class="result-tier" id="result-tier"></div>
+        <div class="result-desc" id="result-desc"></div>
+        <div class="result-next" id="result-next"></div>
+        <br>
+        <button class="assessment-retake" onclick="retakeQuiz()">↺ Retake assessment</button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- SCREENSHOTS -->
 <section id="screenshots">
   <div class="inner">
@@ -1328,84 +1575,89 @@ footer {
     <div class="screenshot-group">
       <h3>Claude Code Setup</h3>
       <div class="screenshot-list">
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-09%20at%209.31.10%20PM.png', 'Getting Fully Operational — official program session card')">Getting Fully Operational</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-15%20at%2010.15.27%20AM.png', 'Common Install Issues — troubleshooting guide for Claude Code errors')">Common Install Issues</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-23%20at%2010.09.01%20AM.png', 'Claude Code File System Diagram — ~/.claude/ folder structure')">Claude Code File System Diagram</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-09%20at%209.31.10%20PM.png', 'Getting Fully Operational — official program session card')">Getting Fully Operational</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-15%20at%2010.15.27%20AM.png', 'Common Install Issues — troubleshooting guide for Claude Code errors')">Common Install Issues</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-23%20at%2010.09.01%20AM.png', 'Claude Code File System Diagram — ~/.claude/ folder structure')">Claude Code File System Diagram</span>
       </div>
     </div>
 
     <div class="screenshot-group">
       <h3>CLAUDE.md &amp; Configuration</h3>
       <div class="screenshot-list">
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%205.08.32%20PM.png', 'Chief of Staff Mindset — system prompt showing CoS thinking framework')">Chief of Staff Mindset</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%209.10.57%20PM.png', 'CLAUDE.md Table of Contents — 8 sections including Core Mindset, Planning, MCP Tools, Memory')">CLAUDE.md Table of Contents</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%209.13.56%20PM.png', 'MCP Tools Configuration — Google Workspace, Slack, Chrome MCPs always available')">MCP Tools Configuration</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-17%20at%205.08.32%20PM.png', 'Chief of Staff Mindset — system prompt showing CoS thinking framework')">Chief of Staff Mindset</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-17%20at%209.10.57%20PM.png', 'CLAUDE.md Table of Contents — 8 sections including Core Mindset, Planning, MCP Tools, Memory')">CLAUDE.md Table of Contents</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-17%20at%209.13.56%20PM.png', 'MCP Tools Configuration — Google Workspace, Slack, Chrome MCPs always available')">MCP Tools Configuration</span>
       </div>
     </div>
 
     <div class="screenshot-group">
       <h3>Custom Skills</h3>
       <div class="screenshot-list">
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%204.56.25%20PM.png', 'Screenshots Skill in VS Code — ss.md skill being built in Cursor IDE with video')">Screenshots Skill in VS Code</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%204.57.56%20PM.png', 'Screenshots Skill in Terminal — same ss.md skill in dark terminal view')">Screenshots Skill in Terminal</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-17%20at%204.58.00%20PM.png', 'Ramble-to-PPT Skill — SKILL.md converting rough brain dumps into polished presentations')">Ramble-to-PPT Skill</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-17%20at%204.56.25%20PM.png', 'Screenshots Skill in VS Code — ss.md skill being built in Cursor IDE with video')">Screenshots Skill in VS Code</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-17%20at%204.57.56%20PM.png', 'Screenshots Skill in Terminal — same ss.md skill in dark terminal view')">Screenshots Skill in Terminal</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-17%20at%204.58.00%20PM.png', 'Ramble-to-PPT Skill — SKILL.md converting rough brain dumps into polished presentations')">Ramble-to-PPT Skill</span>
       </div>
     </div>
 
     <div class="screenshot-group">
       <h3>Scheduling &amp; Automation</h3>
       <div class="screenshot-list">
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%208.15.06%20PM.png', 'Scheduling Options Comparison — /schedule vs. cron vs. CronCreate vs. /loop table')">Scheduling Options Comparison</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%208.16.57%20PM.png', 'When to Use /schedule vs. Cron — plain-language decision guide')">When to Use /schedule vs. Cron</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.20.26%20PM.png', 'Google Apps Script Code — sendMorningBriefingDraft() function')">Google Apps Script Code</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.21.38%20PM.png', 'Google Apps Script Setup — 6-step guide to schedule morning briefing auto-send')">Google Apps Script Setup Guide</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-05-03%20at%2012.28.07%20PM.png', 'Schedule an Email Draft Into Your Inbox — Apps Script walkthrough from session slides')">Schedule an Email Draft Into Your Inbox</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%208.15.06%20PM.png', 'Scheduling Options Comparison — /schedule vs. cron vs. CronCreate vs. /loop table')">Scheduling Options Comparison</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%208.16.57%20PM.png', 'When to Use /schedule vs. Cron — plain-language decision guide')">When to Use /schedule vs. Cron</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.20.26%20PM.png', 'Google Apps Script Code — sendMorningBriefingDraft() function')">Google Apps Script Code</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.21.38%20PM.png', 'Google Apps Script Setup — 6-step guide to schedule morning briefing auto-send')">Google Apps Script Setup Guide</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-05-03%20at%2012.28.07%20PM.png', 'Schedule an Email Draft Into Your Inbox — Apps Script walkthrough from session slides')">Schedule an Email Draft Into Your Inbox</span>
       </div>
     </div>
 
     <div class="screenshot-group">
       <h3>Morning Briefing</h3>
       <div class="screenshot-list">
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.15.13%20PM.png', 'First Claude Prompt: Morning Briefing — the actual plain-language request typed to start building')">First Claude Prompt: Morning Briefing</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.13.08%20PM.png', 'Progressive Builder: 10+ Iterations — slide showing 11 feature additions over time')">Progressive Builder: 10+ Iterations</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.01.58%20PM.png', 'Morning Briefing: Energy & Weather — survival mode rating + weather + day summary')">Morning Briefing: Energy &amp; Weather</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.02.56%20PM.png', 'Morning Briefing: Today\'s Schedule — color-coded calendar with event details and locations')">Morning Briefing: Today's Schedule</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.04.28%20PM.png', 'Morning Briefing: This Week\'s Goals — goal-aligned daily context with "Use AI to become more of the person you want to be"')">Morning Briefing: This Week's Goals</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.04.52%20PM.png', 'Morning Briefing: Let Claude Handle It — email keyword routing system (DRAFT, PREP, IPREP, MMPREP)')">Morning Briefing: Let Claude Handle It</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%209.06.12%20PM.png', 'Morning Briefing: Your City This Week — local events + motivational quote from Luis Buñuel')">Morning Briefing: Your City This Week</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.15.13%20PM.png', 'First Claude Prompt: Morning Briefing — the actual plain-language request typed to start building')">First Claude Prompt: Morning Briefing</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.13.08%20PM.png', 'Progressive Builder: 10+ Iterations — slide showing 11 feature additions over time')">Progressive Builder: 10+ Iterations</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.01.58%20PM.png', 'Morning Briefing: Energy & Weather — survival mode rating + weather + day summary')">Morning Briefing: Energy &amp; Weather</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.02.56%20PM.png', 'Morning Briefing: Today\'s Schedule — color-coded calendar with event details and locations')">Morning Briefing: Today's Schedule</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.04.28%20PM.png', 'Morning Briefing: This Week\'s Goals — goal-aligned daily context with "Use AI to become more of the person you want to be"')">Morning Briefing: This Week's Goals</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.04.52%20PM.png', 'Morning Briefing: Let Claude Handle It — email keyword routing system (DRAFT, PREP, IPREP, MMPREP)')">Morning Briefing: Let Claude Handle It</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%209.06.12%20PM.png', 'Morning Briefing: Your City This Week — local events + motivational quote from Luis Buñuel')">Morning Briefing: Your City This Week</span>
       </div>
     </div>
 
     <div class="screenshot-group">
       <h3>Agent Architecture</h3>
       <div class="screenshot-list">
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%207.51.43%20PM.png', 'AI Agents: The Flow Whiteboard — hand-drawn sketch showing trigger/output flow with time, context, files, real-time access')">AI Agents: The Flow Whiteboard</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-20%20at%207.52.04%20PM.png', 'AI Agents: The Flow (Close-up) — same whiteboard diagram, tighter crop')">AI Agents: The Flow (Close-up)</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%207.51.43%20PM.png', 'AI Agents: The Flow Whiteboard — hand-drawn sketch showing trigger/output flow with time, context, files, real-time access')">AI Agents: The Flow Whiteboard</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-20%20at%207.52.04%20PM.png', 'AI Agents: The Flow (Close-up) — same whiteboard diagram, tighter crop')">AI Agents: The Flow (Close-up)</span>
       </div>
     </div>
 
     <div class="screenshot-group">
       <h3>Session Frameworks</h3>
       <div class="screenshot-list">
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-23%20at%2010.25.14%20AM.png', 'Projects: Find Your Goldilocks — too big / too small / just right comparison table for scoping projects')">Projects: Find Your Goldilocks</span>
-        <span class="screenshot-link" onclick="openLightbox('./screenshots/Screenshot%202026-04-30%20at%2010.36.14%20AM.png', 'NoteQuest: Built and Iterated in Claude Code — app testimonial and deployment story from Session 3')">NoteQuest: Built and Iterated in Claude Code</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-23%20at%2010.25.14%20AM.png', 'Projects: Find Your Goldilocks — too big / too small / just right comparison table for scoping projects')">Projects: Find Your Goldilocks</span>
+        <span class="screenshot-link" onclick="openLightbox('./Mastermind%20Files/Mastermind%20Files%20-%20Screenshots/Screenshot%202026-04-30%20at%2010.36.14%20AM.png', 'NoteQuest: Built and Iterated in Claude Code — app testimonial and deployment story from Session 3')">NoteQuest: Built and Iterated in Claude Code</span>
       </div>
     </div>
 
   </div>
 </section>
 
+<!-- BACK TO TOP -->
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
 <footer>
   AI Agent Mastermind &nbsp;·&nbsp; Clare Mestre, Implementation Director &nbsp;·&nbsp; May 2026
 </footer>
 
 <script>
-// PROGRESS BAR
+// PROGRESS BAR + BACK TO TOP
 window.addEventListener('scroll', () => {
   const scrollTop = document.documentElement.scrollTop;
   const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
   document.getElementById('progress-bar').style.width = (scrollTop / scrollHeight * 100) + '%';
-});
+  const btn = document.getElementById('back-to-top');
+  scrollTop > 400 ? btn.classList.add('visible') : btn.classList.remove('visible');
+}, { passive: true });
 
 // NAV ACTIVE STATE
 const sections = document.querySelectorAll('section[id], #hero');
@@ -1420,6 +1672,58 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { rootMargin: '-40% 0px -55% 0px' });
 sections.forEach(s => observer.observe(s));
+
+// HAMBURGER NAV
+function toggleNav() {
+  document.getElementById('nav-links').classList.toggle('open');
+}
+function closeNav() {
+  document.getElementById('nav-links').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('nav')) closeNav();
+});
+
+// READING TIME
+(function() {
+  const words = document.body.innerText.trim().split(/\s+/).length;
+  const mins = Math.ceil(words / 200);
+  document.getElementById('reading-time').textContent = `~${mins} min read`;
+})();
+
+// ANIMATED COUNTERS
+function animateCounter(el, target) {
+  const duration = 1500;
+  const start = Date.now();
+  const tick = () => {
+    const elapsed = Date.now() - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.floor(ease * target);
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = target;
+  };
+  tick();
+}
+document.querySelectorAll('.counter').forEach(el => {
+  animateCounter(el, parseInt(el.dataset.target));
+});
+
+// SCROLL REVEAL ANIMATIONS
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.session-card, .framework-card, .skill-card, .tool-card, .workforce-card, .training-step, .screenshot-group, .tldr-card, .assessment-card').forEach((el, i) => {
+  el.setAttribute('data-animate', '');
+  if (i % 3 === 1) el.setAttribute('data-animate-delay', '1');
+  if (i % 3 === 2) el.setAttribute('data-animate-delay', '2');
+  revealObserver.observe(el);
+});
 
 // SESSION ACCORDION
 function toggleSession(header) {
@@ -1436,6 +1740,21 @@ function toggleFramework(header) {
   const btn = card.querySelector('.framework-expand-btn');
   body.classList.toggle('open');
   btn.textContent = body.classList.contains('open') ? 'Show less ▴' : 'Read more ▾';
+}
+
+// COPY FRAMEWORK
+function copyFramework(e, btn) {
+  e.stopPropagation();
+  const card = btn.closest('.framework-card');
+  const title = card.querySelector('.framework-title').textContent;
+  const teaser = card.querySelector('.framework-teaser').textContent;
+  const items = Array.from(card.querySelectorAll('.framework-body li')).map(li => '• ' + li.textContent.trim());
+  const text = `${title}\n${teaser}\n\n${items.join('\n')}`;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
 }
 
 // SKILL ACCORDION
@@ -1461,6 +1780,61 @@ function closeLightbox(e) {
   }
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+// AI READINESS ASSESSMENT
+const quizAnswers = {};
+function updateQuizBtn(q) {
+  const btn = document.getElementById(q === 5 ? 'submit-quiz' : `next-${q}`);
+  const selected = document.querySelector(`input[name="q${q}"]:checked`);
+  if (selected) { btn.classList.add('enabled'); quizAnswers[q] = parseInt(selected.value); }
+}
+document.querySelectorAll('.option-label input').forEach(input => {
+  input.addEventListener('change', function() {
+    const q = parseInt(this.name.replace('q',''));
+    document.querySelectorAll(`input[name="${this.name}"]`).forEach(r => r.closest('.option-label').classList.remove('selected'));
+    this.closest('.option-label').classList.add('selected');
+    updateQuizBtn(q);
+  });
+});
+function nextQuestion(current) {
+  document.querySelector(`[data-q="${current}"]`).classList.remove('active');
+  document.querySelector(`[data-q="${current + 1}"]`).classList.add('active');
+  document.getElementById('quiz-progress').style.width = (current / 5 * 100) + '%';
+}
+function submitQuiz() {
+  const total = Object.values(quizAnswers).reduce((a,b) => a+b, 0);
+  document.getElementById('quiz-progress').style.width = '100%';
+  document.querySelector('[data-q="5"]').classList.remove('active');
+  const result = document.getElementById('quiz-result');
+  result.classList.add('show');
+  let tier, desc, next;
+  if (total <= 3) {
+    tier = 'Exploring';
+    desc = "You're in good company — most organizations are at this stage. The biggest unlock is going from one-off use to building workflows that actually run on their own.";
+    next = "Start here: get one person set up with a CLAUDE.md and a context document. That single step changes how AI feels — from a tool you use to a system that knows you.";
+  } else if (total <= 7) {
+    tier = 'Building';
+    desc = "You have a real foundation. The next step is connecting your tools across systems and making at least one workflow autonomous — something that runs without anyone triggering it.";
+    next = "Focus on the Connect → Continue → Compound framework. Pick one workflow, make it connect two tools, and schedule it to run overnight. That's the unlock.";
+  } else {
+    tier = 'Scaling';
+    desc = "You're ahead of the curve. The work now is orchestration — moving from individual workflows to a coordinated system where agents hand off to each other and compound over time.";
+    next = "The Digital Workforce section of this site is your playbook. Start designing your Chief of Staff layer — it's the move that changes everything.";
+  }
+  document.getElementById('result-tier').textContent = tier;
+  document.getElementById('result-desc').textContent = desc;
+  document.getElementById('result-next').textContent = next;
+}
+function retakeQuiz() {
+  Object.keys(quizAnswers).forEach(k => delete quizAnswers[k]);
+  document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+  document.querySelectorAll('.option-label input').forEach(i => i.checked = false);
+  document.querySelectorAll('.assessment-next-btn, .assessment-submit-btn').forEach(b => b.classList.remove('enabled'));
+  document.getElementById('quiz-result').classList.remove('show');
+  document.getElementById('quiz-progress').style.width = '0%';
+  document.querySelector('[data-q="5"]').classList.remove('active');
+  document.querySelector('[data-q="1"]').classList.add('active');
+}
 </script>
 </body>
 </html>
