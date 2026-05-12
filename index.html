@@ -439,28 +439,36 @@ footer {
 
 /* TL;DR CARD */
 #tldr {
-  background: var(--slate); padding: 48px;
+  background: linear-gradient(135deg, #1a2d35 0%, #2d1f2d 100%);
+  padding: 56px 48px;
 }
 .tldr-card {
-  max-width: 800px; margin: 0 auto;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-left: 5px solid var(--gold);
-  border-radius: 8px; padding: 28px 32px;
+  max-width: 820px; margin: 0 auto;
 }
 .tldr-label {
-  font-size: 0.72rem; font-weight: bold; letter-spacing: 0.12em;
+  font-size: 0.72rem; font-weight: bold; letter-spacing: 0.14em;
   color: var(--gold); text-transform: uppercase; margin-bottom: 10px;
 }
-.tldr-card h3 { color: white; font-size: 1.1rem; margin-bottom: 16px; }
-.tldr-card ul { padding-left: 0; list-style: none; }
+.tldr-card h3 { color: white; font-size: 1.25rem; margin-bottom: 28px; font-weight: bold; }
+.tldr-card ul { padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
 .tldr-card li {
-  font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.65;
-  padding: 8px 0 8px 22px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  font-size: 0.91rem; color: rgba(255,255,255,0.88); line-height: 1.65;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px;
+  padding: 14px 18px 14px 56px;
   position: relative;
+  transition: background 0.2s;
 }
-.tldr-card li:last-child { border-bottom: none; }
-.tldr-card li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-weight: bold; }
+.tldr-card li:hover { background: rgba(255,255,255,0.09); }
+.tldr-num {
+  position: absolute; left: 14px; top: 13px;
+  background: var(--grad-warm);
+  color: white; font-size: 0.65rem; font-weight: bold;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  letter-spacing: 0;
+}
 
 /* SCROLL ANIMATIONS */
 [data-animate] {
@@ -599,15 +607,15 @@ footer {
 <!-- TL;DR -->
 <section id="tldr">
   <div class="tldr-card" data-animate>
-    <div class="tldr-label">If you only have 5 minutes</div>
-    <h3>Six things that matter most</h3>
+    <div class="tldr-label">If you only have 3 minutes</div>
+    <h3>Six things worth knowing</h3>
     <ul>
-      <li>AI agents aren't chatbots — they're systems that run on their own, connect your tools together, and keep improving over time without you managing every step.</li>
-      <li>You don't need a technical background to build real, working AI workflows. With the right structure, most people are up and running in 4–6 weeks.</li>
-      <li>The most advanced concept — the Digital Workforce — mirrors how high-performing human teams are structured: a Chief of Staff who handles delegation, Directors who own lanes, and a Historian who captures everything.</li>
-      <li>The three-question test for any AI investment: does it <strong>Connect</strong> multiple tools? Does it <strong>Continue</strong> without you? Does it <strong>Compound</strong> over time?</li>
-      <li>Recommended training rollout: live leadership demo first → cohort of directors and managers → biweekly sessions + office hours + a Teams community for peer learning.</li>
-      <li>The simplest rule for anyone getting started: when you don't know how to do something, ask Claude. Then keep asking — follow the thread, try what it suggests, go deeper. Claude is both the tool and the guide, and it never runs out of patience.</li>
+      <li><span class="tldr-num">01</span>You don't need a technical background to build real, working AI workflows. With the right structure, most people are up and running in 4–6 weeks.</li>
+      <li><span class="tldr-num">02</span>AI agents aren't chatbots — they're systems that run on their own, connect your tools together, and keep improving over time without you managing every step.</li>
+      <li><span class="tldr-num">03</span>When you don't know how to do something, ask Claude. Then keep asking — follow the thread, try what it suggests, go deeper. Claude is both the tool and the guide, and it never runs out of patience.</li>
+      <li><span class="tldr-num">04</span>Quick win: a voice-to-text app like Wispr Flow lets you dictate instead of type — it's 4× faster and works everywhere on your computer. You don't need to be a good typist to be a power user.</li>
+      <li><span class="tldr-num">05</span>Recommended training rollout: live leadership demo first → cohort of directors and managers → biweekly sessions + office hours + a Teams community for peer learning.</li>
+      <li><span class="tldr-num">06</span>The Digital Workforce concept mirrors how high-performing human teams are structured: a Chief of Staff who handles delegation, Directors who own their lane, and a Historian who captures everything.</li>
     </ul>
   </div>
 </section>
